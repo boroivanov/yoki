@@ -1,10 +1,14 @@
 from flask import Flask
 from flask_restful import Api
 
-from resources.deployment import DeploymentList
+from resources.deployment import Deployment, DeploymentList
 
 app = Flask(__name__)
 api = Api(app)
+
+
+api.add_resource(Deployment, '/clusters/<string:cluster>/'
+                 'services/<string:service>/deployments/<string:deployment>')
 
 DeploymentList_routes = [
     '/deployments',
