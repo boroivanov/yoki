@@ -7,10 +7,12 @@ import logging
 log = logging.getLogger()
 log.setLevel(os.getenv('LOG_LEVEL', logging.INFO))
 
+DYNAMODB_TABLE_PREFIX = os.getenv('DYNAMODB_TABLE_PREFIX', 'dev-')
+
 
 class EcsEvent(object):
-    instance_state_table = 'ECSInstanceState'
-    task_state_table = 'ECSTaskState'
+    instance_state_table = 'yoki-ECSInstanceState'
+    task_state_table = 'yoki-ECSTaskState'
 
     def __init__(self, event, region):
         self.dynamodb = boto3.resource('dynamodb', region_name=region)
@@ -25,8 +27,8 @@ class EcsEvent(object):
 
     def table_name(self):
         if self.instance_state_change():
-            return self.instance_state_table
-        return self.task_state_table
+            return DYNAMODB_TABLE_PREFIX + self.instance_state_table
+        return DYNAMODB_TABLE_PREFIX + self.task_state_table
 
     def id_name(self):
         if self.instance_state_change():
@@ -44,20 +46,31 @@ class EcsEvent(object):
 
     def needs_updating(self):
         saved_event = self.get_item(self.id_name, self.event_id)
+        if 'Item' not in saved_event:
+            return True
         return saved_event['Item']['version'] < self.event['detail']['version']
 
-    def get_item(self, key, value):
-        return self.table.get_item(Key={key: value})
+    def as_dict(self):
+        event = {}
+        event['cw_version'] = self.event['version']
+        event.update(self.event['detail'])
+        # event['current_status'] = self.event['status']
+        # event.pop('status')
+        ttl = int(time.time()) + int(self.state_item_ttl)
+        event['TTL'] = ttl
+        return event
 
-    def put_item(self, item, ttl):
+    def get_item(self, key, value):
+        return self.table().get_item(Key={key: value})
+
+    def put_item(self, ttl):
         if self.needs_updating():
             log.info('Received event is more recent version than '
                      'stored event - updating')
-            ttl = int(time.time()) + int(self.state_item_ttl)
-            item['TTL'] = ttl
-            self.table.put_item(
-                Item=item
+            return self.table().put_item(
+                Item=self.as_dict()
             )
-        else:
-            log.info('Received event is more recent version than '
-                     'stored event - ignoring')
+
+        log.info('Received event is an older version than '
+                 'stored event - ignoring')
+        return None

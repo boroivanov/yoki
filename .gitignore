@@ -43,3 +43,9 @@ coverage.xml
 
 # Python virtual environments
 venv/
+
+# Serverless
+.env.yml
+.serverless/
+node_modules/
+package-lock.json
