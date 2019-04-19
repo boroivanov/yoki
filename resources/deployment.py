@@ -41,7 +41,9 @@ class DeploymentList(Resource):
         elif cluster and not service:
             params['KeyConditionExpression'] = Key('cluster').eq(cluster)
         else:
-            return self.table.scan()['Items']
+            return {'deployments': decimal_to_dict(
+                self.table.scan()['Items']
+            )}
 
         return {'deployments': decimal_to_dict(
             self.table.query(**params)['Items']
