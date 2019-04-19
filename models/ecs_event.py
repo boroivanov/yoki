@@ -3,6 +3,8 @@ import boto3
 import time
 import logging
 
+from botocore.exceptions import ClientError
+
 
 log = logging.getLogger()
 log.setLevel(os.getenv('LOG_LEVEL', logging.INFO))
@@ -74,3 +76,82 @@ class EcsEvent(object):
         log.info('Received event is an older version than '
                  'stored event - ignoring')
         return None
+
+
+class EcsEventTaskDigest(object):
+    table_name = DYNAMODB_TABLE_PREFIX + 'yoki-ECSTaskDigest'
+
+    def __init__(self, event, region):
+        self.dynamodb = boto3.resource('dynamodb', region_name=region)
+        self.ecs = boto3.client('ecs', region_name=region)
+        self.event = event
+        self.event_detail = event['detail']
+        self.digest_item_ttl = os.getenv('DIGEST_ITEM_TTL', 2592000)
+
+    def table(self):
+        return self.dynamodb.Table(self.table_name)
+
+    def td_arn(self):
+        return self.event_detail['taskDefinitionArn']
+
+    def describe_task_definition(self):
+        try:
+            res = self.ecs.describe_task_definition(
+                taskDefinition=self.td_arn()
+            )
+        except ClientError as e:
+            log.warning(e.response['Error']['Message'])
+            raise
+        return res['taskDefinition']
+
+    def cluster(self):
+        return self.event_detail['clusterArn'].split('/')[-1]
+
+    def service(self):
+        return self.event_detail['group'].split(':')[-1]
+
+    def task_definition(self):
+        return self.event_detail['taskDefinitionArn'].split('/')[-1]
+
+    def task_id(self):
+        return self.event_detail['taskArn'].split('/')[-1]
+
+    def images(self):
+        containers = self.describe_task_definition()['containerDefinitions']
+        return [c['image'].split('/')[-1] for c in containers]
+
+    def deployment(self):
+        return self.event_detail['startedBy']
+
+    def as_dict(self):
+        return {
+            'TTL': int(time.time()) + int(self.digest_item_ttl),
+            'deployment': self.event_detail['startedBy'],
+            'cluster': self.cluster(),
+            'service': self.service(),
+            'definition': self.task_definition(),
+            'tasks': {
+                self.task_id(): self.event_detail['lastStatus']
+            },
+            'updatedAt': self.event_detail['updatedAt'],
+            'createdAt': self.event_detail['createdAt'],
+            'images': self.images()
+        }
+
+    def get_item(self, key, value):
+        return self.table().get_item(Key={key: value})
+
+    def put_item(self, ttl):
+        item = self.get_item('deployment', self.deployment())
+
+        if 'Item' in item:
+            log.info(f'Updating digest for {self.deployment()}.')
+            item = item['Item']
+            item['tasks'][self.task_id()] = self.event_detail['lastStatus']
+        else:
+            log.info(f'Creating a new digest for {self.deployment()}.')
+            item = self.as_dict()
+
+        return self.table().put_item(
+            Item=item
+        )

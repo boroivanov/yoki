@@ -114,10 +114,10 @@ resources:
       Properties:
         TableName: ${self:custom.task_digest_table}
         AttributeDefinitions:
-          - AttributeName: startedBy
+          - AttributeName: deployment
             AttributeType: S
         KeySchema:
-          - AttributeName: startedBy
+          - AttributeName: deployment
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
