@@ -94,6 +94,23 @@ class EcsEventTaskDigest(object):
     def td_arn(self):
         return self.event_detail['taskDefinitionArn']
 
+    def describe_service(self):
+        response = self.ecs.describe_services(
+            cluster=self.cluster(),
+            services=[self.service()]
+        )
+        return response['services'][0]
+
+    def describe_deployment_counts(self):
+        for deployment in self.describe_service()['deployments']:
+            if deployment['id'] == self.deployment():
+                return {
+                    'desiredCount': deployment['desiredCount'],
+                    'pendingCount': deployment['pendingCount'],
+                    'runningCount': deployment['runningCount'],
+                }
+        return {'desiredCount': 0, 'pendingCount': 0, 'runningCount': 0}
+
     def describe_task_definition(self):
         try:
             res = self.ecs.describe_task_definition(
@@ -124,7 +141,8 @@ class EcsEventTaskDigest(object):
         return self.event_detail['startedBy']
 
     def as_dict(self):
-        return {
+        counts = self.describe_deployment_counts()
+        item = {
             'TTL': int(time.time()) + int(self.digest_item_ttl),
             'deployment': self.event_detail['startedBy'],
             'cluster': self.cluster(),
@@ -137,6 +155,7 @@ class EcsEventTaskDigest(object):
             'createdAt': self.event_detail['createdAt'],
             'images': self.images()
         }
+        return {**item, **counts}
 
     def get_item(self, key, value):
         return self.table().get_item(Key={key: value})
@@ -148,6 +167,7 @@ class EcsEventTaskDigest(object):
             log.info(f'Updating digest for {self.deployment()}.')
             item = item['Item']
             item['tasks'][self.task_id()] = self.event_detail['lastStatus']
+            item.update(self.describe_deployment_counts())
         else:
             log.info(f'Creating a new digest for {self.deployment()}.')
             item = self.as_dict()
