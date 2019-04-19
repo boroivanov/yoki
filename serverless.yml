@@ -82,12 +82,10 @@ resources:
         AttributeDefinitions:
           - AttributeName: containerInstanceArn
             AttributeType: S
+        BillingMode: PAY_PER_REQUEST
         KeySchema:
           - AttributeName: containerInstanceArn
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
         TimeToLiveSpecification:
           AttributeName: TTL
           Enabled: True
@@ -99,12 +97,10 @@ resources:
         AttributeDefinitions:
           - AttributeName: taskArn
             AttributeType: S
+        BillingMode: PAY_PER_REQUEST
         KeySchema:
           - AttributeName: taskArn
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
         TimeToLiveSpecification:
           AttributeName: TTL
           Enabled: True
@@ -116,12 +112,10 @@ resources:
         AttributeDefinitions:
           - AttributeName: deployment
             AttributeType: S
+        BillingMode: PAY_PER_REQUEST
         KeySchema:
           - AttributeName: deployment
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
         TimeToLiveSpecification:
           AttributeName: TTL
           Enabled: True

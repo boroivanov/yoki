@@ -1,3 +1,4 @@
+import os
 import boto3
 from flask_restful import Resource
 from boto3.dynamodb.conditions import Key
@@ -5,14 +6,18 @@ from boto3.dynamodb.conditions import Key
 from encoders.decimal import decimal_to_dict
 
 
+DYNAMODB_TABLE_PREFIX = os.getenv('DYNAMODB_TABLE_PREFIX', 'dev-')
+
+
 class Deployment(Resource):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('ecs-slack-ECSTaskDigest')
+    table_name = DYNAMODB_TABLE_PREFIX + 'yoki-ECSTaskDigest'
+    table = dynamodb.Table(table_name)
 
     def get(self, deployment, cluster=None, service=None):
         try:
             params = {
-                'Key': {'startedBy': f'ecs-svc/{deployment}'},
+                'Key': {'deployment': f'ecs-svc/{deployment}'},
             }
             return {'deployment': decimal_to_dict(
                 self.table.get_item(**params)['Item']
@@ -23,7 +28,8 @@ class Deployment(Resource):
 
 class DeploymentList(Resource):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('ECSDeployments')
+    table_name = DYNAMODB_TABLE_PREFIX + 'yoki-ECSTaskDigest'
+    table = dynamodb.Table(table_name)
 
     def get(self, cluster=None, service=None):
         params = {
