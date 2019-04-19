@@ -100,7 +100,20 @@ resources:
         AttributeDefinitions:
           - AttributeName: deployment
             AttributeType: S
+          - AttributeName: cluster
+            AttributeType: S
+          - AttributeName: service
+            AttributeType: S
         BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: cluster-service-index
+            KeySchema:
+              - AttributeName: cluster
+                KeyType: HASH
+              - AttributeName: service
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
         KeySchema:
           - AttributeName: deployment
             KeyType: HASH
