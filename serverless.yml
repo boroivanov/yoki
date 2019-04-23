@@ -23,6 +23,10 @@ provider:
         - dynamodb:Query
         - dynamodb:Scan
         - dynamodb:PutItem
+        - dynamodb:DescribeStream
+        - dynamodb:GetRecords
+        - dynamodb:GetShardIterator
+        - dynamodb:ListStreams
       Resource:
         - arn:aws:dynamodb:*:*:table/${self:custom.instance_state_table}
         - arn:aws:dynamodb:*:*:table/${self:custom.task_state_table}
@@ -45,12 +49,11 @@ provider:
 
 functions:
   ecs-event-handler:
-    name: ${self:service}-ecs-event-handler
+    name: ${opt:stage, 'dev'}-${self:service}-ecs-event-handler
     handler: lambdas.ecs_event.lambda_handler
     description: Store ECS events in dynamodb
     memorySize: 128
     timeout: 60
-    reservedConcurrency: 1
     environment: ${file(.env.yml):lambda.environment}
     events:
       - cloudwatchEvent:
@@ -60,6 +63,20 @@ functions:
             detail-type:
               - "ECS Task State Change"
               - "ECS Container Instance State Change"
+
+  dynamodb-slack-trigger:
+    name: ${opt:stage, 'dev'}-${self:service}-dynamodb-slack-trigger
+    handler: lambdas.dynamodb_slack_trigger.lambda_handler
+    description: Trigger Slack notifications for task digests.
+    memorySize: 128
+    timeout: 60
+    environment: ${file(.env.yml):lambda.environment}
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt: [ ECSTaskDigest, StreamArn ]
+
 
 resources:
   Resources:
@@ -117,6 +134,8 @@ resources:
         KeySchema:
           - AttributeName: deployment
             KeyType: HASH
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
         TimeToLiveSpecification:
           AttributeName: TTL
           Enabled: True
