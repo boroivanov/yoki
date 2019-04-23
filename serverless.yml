@@ -16,30 +16,30 @@ provider:
   name: aws
   runtime: python3.6
   iamRoleStatements:
-    - Effect: "Allow"
+    - Effect: Allow
       Action:
-        - "dynamodb:Batch*"
-        - "dynamodb:GetItem"
-        - "dynamodb:Query"
-        - "dynamodb:Scan"
-        - "dynamodb:PutItem"
+        - dynamodb:Batch*
+        - dynamodb:GetItem
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:PutItem
       Resource:
-        - "arn:aws:dynamodb:*:*:table/${self:custom.instance_state_table}"
-        - "arn:aws:dynamodb:*:*:table/${self:custom.task_state_table}"
-        - "arn:aws:dynamodb:*:*:table/${self:custom.task_digest_table}"
-    - Effect: "Allow"
+        - arn:aws:dynamodb:*:*:table/${self:custom.instance_state_table}
+        - arn:aws:dynamodb:*:*:table/${self:custom.task_state_table}
+        - arn:aws:dynamodb:*:*:table/${self:custom.task_digest_table}
+    - Effect: Allow
       Action:
-        - "ecr:DescribeRepositories"
-        - "ecr:DescribeImages"
+        - ecr:DescribeRepositories
+        - ecr:DescribeImages
       Resource: "*"
-    - Effect: "Allow"
+    - Effect: Allow
       Action:
-        - "ecs:Describe*"
-        - "ecs:List*"
-        - "ecs:UpdateService"
-        - "ecs:RegisterTaskDefinition"
-        - "application-autoscaling:RegisterScalableTarget"
-        - "iam:PassRole"
+        - ecs:Describe*
+        - ecs:List*
+        - ecs:UpdateService
+        - ecs:RegisterTaskDefinition
+        - application-autoscaling:RegisterScalableTarget
+        - iam:PassRole
       Resource: "*"
 
 
