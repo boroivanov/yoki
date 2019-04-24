@@ -8,6 +8,7 @@ custom:
   instance_state_table: ${opt:stage, 'dev'}-${self:service}-ECSCtrInstanceState
   task_state_table: ${opt:stage, 'dev'}-${self:service}-ECSTaskState
   task_digest_table: ${opt:stage, 'dev'}-${self:service}-ECSTaskDigest
+  notifications_table: ${opt:stage, 'dev'}-${self:service}-notifications
   pythonRequirements:
     dockerizePip: true
 
@@ -136,6 +137,21 @@ resources:
             KeyType: HASH
         StreamSpecification:
           StreamViewType: NEW_IMAGE
+        TimeToLiveSpecification:
+          AttributeName: TTL
+          Enabled: True
+
+    notifications:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.notifications}
+        AttributeDefinitions:
+          - AttributeName: deployment
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: deployment
+            KeyType: HASH
         TimeToLiveSpecification:
           AttributeName: TTL
           Enabled: True
