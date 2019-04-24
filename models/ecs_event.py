@@ -153,7 +153,8 @@ class EcsEventTaskDigest(object):
             },
             'updatedAt': self.event_detail['updatedAt'],
             'createdAt': self.event_detail['createdAt'],
-            'images': self.images()
+            'images': self.images(),
+            'launchType': self.event_detail['launchType'],
         }
         return {**item, **counts}
 
