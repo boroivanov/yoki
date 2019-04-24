@@ -159,14 +159,17 @@ class EcsEventTaskDigest(object):
         return {**item, **counts}
 
     def get_item(self, key, value):
-        return self.table().get_item(Key={key: value})
+        try:
+            res = self.table().get_item(Key={key: value})
+            return res['Item']
+        except KeyError:
+            return None
 
     def put_item(self, ttl):
         item = self.get_item('deployment', self.deployment())
 
-        if 'Item' in item:
+        if item:
             log.info(f'Updating digest for {self.deployment()}.')
-            item = item['Item']
             item['tasks'][self.task_id()] = self.event_detail['lastStatus']
             item.update(self.describe_deployment_counts())
         else:
