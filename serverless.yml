@@ -32,6 +32,7 @@ provider:
         - arn:aws:dynamodb:*:*:table/${self:custom.instance_state_table}
         - arn:aws:dynamodb:*:*:table/${self:custom.task_state_table}
         - arn:aws:dynamodb:*:*:table/${self:custom.task_digest_table}
+        - arn:aws:dynamodb:*:*:table/${self:custom.notifications_table}
     - Effect: Allow
       Action:
         - ecr:DescribeRepositories
@@ -144,7 +145,7 @@ resources:
     notifications:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:custom.notifications}
+        TableName: ${self:custom.notifications_table}
         AttributeDefinitions:
           - AttributeName: deployment
             AttributeType: S
