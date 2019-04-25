@@ -3,6 +3,7 @@ service:
 
 plugins:
   - serverless-python-requirements
+  - serverless-wsgi
 
 custom:
   instance_state_table: ${opt:stage, 'dev'}-${self:service}-ECSCtrInstanceState
@@ -10,7 +11,10 @@ custom:
   task_digest_table: ${opt:stage, 'dev'}-${self:service}-ECSTaskDigest
   notifications_table: ${opt:stage, 'dev'}-${self:service}-notifications
   pythonRequirements:
-    dockerizePip: true
+    dockerizePip: non-linux
+  wsgi:
+    app: app.app
+    packRequirements: false
 
 
 provider:
@@ -32,6 +36,7 @@ provider:
         - arn:aws:dynamodb:*:*:table/${self:custom.instance_state_table}
         - arn:aws:dynamodb:*:*:table/${self:custom.task_state_table}
         - arn:aws:dynamodb:*:*:table/${self:custom.task_digest_table}
+        - arn:aws:dynamodb:*:*:table/${self:custom.task_digest_table}/index/*
         - arn:aws:dynamodb:*:*:table/${self:custom.notifications_table}
     - Effect: Allow
       Action:
@@ -50,6 +55,13 @@ provider:
 
 
 functions:
+  app:
+    name: ${opt:stage, 'dev'}-${self:service}-api
+    handler: wsgi.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
   ecs-event-handler:
     name: ${opt:stage, 'dev'}-${self:service}-ecs-event-handler
     handler: lambdas.ecs_event.lambda_handler
