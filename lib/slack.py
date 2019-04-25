@@ -1,6 +1,7 @@
 import os
 import boto3
 import logging
+from collections import Counter
 from slackclient import SlackClient
 
 from models.notifications import Notifications
@@ -83,6 +84,12 @@ class SlackTaskDigest(Slack):
         return f'{self.ecs_url()}taskDefinitions/' \
             f"{self.deployment['definition'].replace(': ', '/')}"
 
+    def stats(self):
+        return Counter(self.deployment['tasks'].values())
+
+    def container_stats(self):
+        return ' '.join(f'{k.lower()}: {v}' for k, v in self.stats().items())
+
     def message_color(self):
         if self.deployment['desiredCount'] != self.deployment['runningCount']:
             color = 'warning'
@@ -115,6 +122,13 @@ class SlackTaskDigest(Slack):
                     'title_link': self.srv_url(),
                     'color': self.message_color(),
                     'text': self.message_text(),
+                    'fields': [
+                        {
+                            'title': 'Container Stats',
+                            'value': self.container_stats(),
+                            'short': 'false'
+                        },
+                    ],
                     'footer': self.message_footer(),
                 }
             ]
