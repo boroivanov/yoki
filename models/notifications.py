@@ -17,7 +17,7 @@ class Notifications(object):
         self.dynamodb = boto3.resource('dynamodb', region_name=region)
         self.deployment_id = deployment_id
         self.slack_ts = slack_ts
-        self.ttl = os.getenv('TTL', 2592000)
+        self.ttl = os.getenv('NOTIFICATION_ITEM_TTL', 2592000)
 
     def table(self):
         return self.dynamodb.Table(self.table_name)
