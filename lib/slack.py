@@ -84,9 +84,13 @@ class SlackTaskDigest(Slack):
             f"{self.deployment['definition'].replace(': ', '/')}"
 
     def message_color(self):
-        self.color = 'good'
         if self.deployment['desiredCount'] != self.deployment['runningCount']:
-            self.color = '#0000FF'
+            color = 'warning'
+        elif self.deployment['pendingCount'] != 0:
+            color = 'warning'
+        else:
+            color = 'good'
+        return color
 
     def message_title(self):
         return f"{self.deployment['cluster']} " \
@@ -130,8 +134,9 @@ class SlackTaskDigest(Slack):
             res = self.sc.api_call('chat.update', ts=ts, **params)
         else:
             res = self.sc.api_call('chat.postMessage', **params)
+            self.update_notifications_item(res)
 
-        self.update_notifications_item(res)
+        log.info(f'Slack response is: {res}')
         return True
 
     def update_notifications_item(self, slack_response):
