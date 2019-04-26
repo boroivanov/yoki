@@ -1,14 +1,10 @@
-from flask_restful import Resource
+from flask_restful import Resource, request
+
+from lib.slack import SlackCommandHandler
 
 
 class Slack(Resource):
+
     def post(self):
-        return {
-            # 'response_type': response_type,
-            # 'channel': channel,
-            # 'username': username,
-            'text': 'hi there',
-            # 'attachments': attachments,
-            # 'replace_original': replace_original,
-            # 'delete_original': delete_original,
-        }
+        cmd = SlackCommandHandler(request.form.to_dict())
+        return cmd.run()
