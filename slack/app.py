@@ -1,6 +1,8 @@
 import os
 import boto3
 import logging
+import string
+
 from collections import Counter
 from slackclient import SlackClient
 
@@ -164,13 +166,12 @@ class SlackTaskDigest(Slack):
 
 
 class SlackCommandHandler(Slack):
+    commands_path = os.path.join(os.path.dirname(__file__), 'commands')
+
     def __init__(self, params):
         log.info(f'Received slack command: {params}')
         self.verify_slack_token(params['token'])
-
-        command_text = params['text'].split()
-        self.command = command_text[0]
-        self.args = command_text[1:]
+        self.params = params
 
     def verify_slack_token(self, token):
         if token != os.environ['SLACK_VERIFICATION_TOKEN']:
@@ -178,4 +179,26 @@ class SlackCommandHandler(Slack):
             raise ValueError('Invalid request token')
 
     def run(self):
+        try:
+            command_text = self.params['text'].split()
+            self.command = command_text[0]
+            self.args = command_text[1:]
+        except IndexError:
+            return self.help()
+
+        if self.command == 'help':
+            return self.help()
         return {'text': f'command: {self.command}, args: {self.args}'}
+
+    def help(self):
+        return {'text': '\n'.join(self.list_commands())}
+
+    def list_commands(self):
+        commands = []
+        alpha = string.ascii_letters
+        for filename in os.listdir(self.commands_path):
+            if filename.startswith(tuple(alpha)) and filename.endswith('.py'):
+                commands.append(filename[:-3])
+        print(f'Slack commands {commands}')
+        commands.sort()
+        return commands
