@@ -1,6 +1,6 @@
 from flask_restful import Resource, request
 
-from lib.slack import SlackCommandHandler
+from slack.app import SlackCommandHandler
 
 
 class Slack(Resource):
