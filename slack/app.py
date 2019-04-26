@@ -2,6 +2,7 @@ import os
 import boto3
 import logging
 import string
+import importlib
 
 from collections import Counter
 from slackclient import SlackClient
@@ -188,10 +189,24 @@ class SlackCommandHandler(Slack):
 
         if self.command == 'help':
             return self.help()
-        return {'text': f'command: {self.command}, args: {self.args}'}
+
+        try:
+            cmd = self.get_command(self.command)
+        except ImportError:
+            return self.help()
+
+        return cmd.run()
 
     def help(self):
         return {'text': '\n'.join(self.list_commands())}
+
+    def get_command(self, module):
+        try:
+            cmd_module = importlib.import_module(f'slack.commands.{module}')
+            cmd_obj = getattr(cmd_module, 'SlackCommand')
+            return cmd_obj()
+        except ImportError:
+            raise
 
     def list_commands(self):
         commands = []
@@ -199,6 +214,5 @@ class SlackCommandHandler(Slack):
         for filename in os.listdir(self.commands_path):
             if filename.startswith(tuple(alpha)) and filename.endswith('.py'):
                 commands.append(filename[:-3])
-        print(f'Slack commands {commands}')
         commands.sort()
         return commands
