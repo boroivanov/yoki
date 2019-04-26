@@ -58,6 +58,7 @@ functions:
   app:
     name: ${opt:stage, 'dev'}-${self:service}-api
     handler: wsgi.handler
+    environment: ${file(.env.yml):lambda.environment}
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
