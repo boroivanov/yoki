@@ -57,7 +57,7 @@ provider:
 functions:
   app:
     name: ${opt:stage, 'dev'}-${self:service}-api
-    handler: wsgi.handler
+    handler: wsgi_handler.handler
     environment: ${file(.env.yml):lambda.environment}
     events:
       - http: ANY /
