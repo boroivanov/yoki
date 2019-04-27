@@ -162,8 +162,8 @@ class SlackTaskDigest(Slack):
             item = Notifications(self.region, self.deployment_id(), ts)
             item.put_item()
         except KeyError:
-            print('Error: Cannot get slack timestamp. Slack response:')
-            print(slack_response)
+            log.error('Error: Cannot get slack timestamp. Slack response:')
+            log.error(slack_response)
 
 
 class SlackCommandHandler(Slack):
@@ -180,6 +180,11 @@ class SlackCommandHandler(Slack):
             raise ValueError('Invalid request token')
 
     def run(self):
+        '''Parse slack command object and run the command.
+
+        :return: Slack command response
+        :rtype: dict
+        '''
         try:
             command_text = self.params['text'].split()
             self.command = command_text[0]
@@ -201,6 +206,13 @@ class SlackCommandHandler(Slack):
         return {'text': '\n'.join(self.list_commands())}
 
     def get_command(self, module):
+        '''Dynamically load slack commands from slack/commands/
+
+        :param module: Command filename
+        :type module: str
+        :return: SlackCommand object
+        :rtype: class object
+        '''
         try:
             cmd_module = importlib.import_module(f'slack.commands.{module}')
             cmd_obj = getattr(cmd_module, 'SlackCommand')
@@ -209,6 +221,11 @@ class SlackCommandHandler(Slack):
             raise
 
     def list_commands(self):
+        '''List commands in slack/commands/
+
+        :return: Slack commands
+        :rtype: list
+        '''
         commands = []
         alpha = string.ascii_letters
         for filename in os.listdir(self.commands_path):
