@@ -1,12 +1,17 @@
 import os
+import logging
 import boto3
 from flask_restful import Resource
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
 from encoders.decimal import decimal_to_dict
 
 
 DYNAMODB_TABLE_PREFIX = os.getenv('DYNAMODB_TABLE_PREFIX', 'dev-')
+
+log = logging.getLogger()
+log.setLevel(os.getenv('LOG_LEVEL', logging.INFO))
 
 
 class Deployment(Resource):
@@ -24,6 +29,9 @@ class Deployment(Resource):
             )}
         except KeyError:
             return {'deployment': 'Deployment not found'}, 404
+        except ClientError as e:
+            log.error(f'[{self.__class__.__name__}] {e}')
+            return {'message': 'Error getting item.'}, 500
 
 
 class DeploymentList(Resource):
@@ -35,16 +43,20 @@ class DeploymentList(Resource):
         params = {
             'IndexName': 'cluster-service-index',
         }
-        if cluster and service:
-            params['KeyConditionExpression'] = Key('cluster').eq(
-                cluster) & Key('service').eq(service)
-        elif cluster and not service:
-            params['KeyConditionExpression'] = Key('cluster').eq(cluster)
-        else:
-            return {'deployments': decimal_to_dict(
-                self.table.scan()['Items']
-            )}
+        try:
+            if cluster and service:
+                params['KeyConditionExpression'] = Key('cluster').eq(
+                    cluster) & Key('service').eq(service)
+            elif cluster and not service:
+                params['KeyConditionExpression'] = Key('cluster').eq(cluster)
+            else:
+                return {'deployments': decimal_to_dict(
+                    self.table.scan()['Items']
+                )}
 
-        return {'deployments': decimal_to_dict(
-            self.table.query(**params)['Items']
-        )}
+            return {'deployments': decimal_to_dict(
+                self.table.query(**params)['Items']
+            )}
+        except ClientError as e:
+            log.error(f'[{self.__class__.__name__}] {e}')
+            return {'message': 'Error getting items.'}, 500
