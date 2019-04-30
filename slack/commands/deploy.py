@@ -2,7 +2,7 @@ import os
 import requests
 
 
-YOKI_API = os.environ('YOKI_API')
+YOKI_API = os.getenv('YOKI_API')
 
 
 class SlackCommand(object):
