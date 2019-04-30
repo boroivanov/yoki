@@ -35,7 +35,8 @@ class Ecs(object):
         containers = td['containerDefinitions']
         ecr = Ecr()
         images = {}
-        for container in containers:
+        for e, container in enumerate(containers):
+            self.rename_positional_containers(str(e), container)
             if container['name'] not in self.tags.keys():
                 continue
             image_uri = self.split_image_uri(container)
@@ -54,6 +55,12 @@ class Ecs(object):
                                  f" {td['taskDefinitionArn']}.")
 
         return images
+
+    def rename_positional_containers(self, index, container):
+        '''Swap positional container/tag with container_name/tag'''
+        if index in self.tags.keys():
+            self.tags[container['name']] = self.tags[index]
+            del self.tags[index]
 
     def register_new_task_definition(self):
         '''Get the current task definition. Compare and verify all images/tags.
