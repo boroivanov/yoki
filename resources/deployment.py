@@ -45,11 +45,14 @@ class Deployment(Resource):
         data = self.parser.parse_args()
         ecs = Ecs(cluster, service, data['tags'])
         try:
-            ecs.deploy()
+            d = ecs.deploy()
         except ValueError as e:
             return {'message': str(e)}
 
-        return {'message': f'Deploying to {cluster} {service} with {data}'}
+        deployment_id = d['service']['deployments'][0]['id']
+        return {'deployment_id': deployment_id,
+                'message': f'Deploying {deployment_id} to {cluster} '
+                f'{service} with {data}'}
 
 
 class DeploymentList(Resource):
