@@ -1,7 +1,7 @@
 import os
 import logging
 import boto3
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
@@ -19,7 +19,14 @@ class Deployment(Resource):
     table_name = DYNAMODB_TABLE_PREFIX + 'yoki-ECSTaskDigest'
     table = dynamodb.Table(table_name)
 
-    def get(self, deployment, cluster=None, service=None):
+    parser = reqparse.RequestParser()
+    parser.add_argument('tags',
+                        type=dict,
+                        required=True,
+                        help='Tags dict cannot be blank.'
+                        )
+
+    def get(self, cluster, service, deployment):
         try:
             params = {
                 'Key': {'deployment': f'ecs-svc/{deployment}'},
@@ -32,6 +39,11 @@ class Deployment(Resource):
         except ClientError as e:
             log.error(f'[{self.__class__.__name__}] {e}')
             return {'message': 'Error getting item.'}, 500
+
+    def post(self, cluster, service):
+        data = self.parser.parse_args()
+        print(data)
+        return {'message': f'deploying to {cluster} {service} with {data}'}
 
 
 class DeploymentList(Resource):

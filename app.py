@@ -9,8 +9,12 @@ app = Flask(__name__)
 api = Api(app)
 
 
-api.add_resource(Deployment, '/clusters/<string:cluster>/'
-                 'services/<string:service>/deployments/<string:deployment>')
+Deployment_routes = [
+    '/clusters/<string:cluster>/services/<string:service>',
+    '/clusters/<string:cluster>/'
+    'services/<string:service>/deployments/<string:deployment>',
+]
+api.add_resource(Deployment, *Deployment_routes)
 
 DeploymentList_routes = [
     '/deployments',
