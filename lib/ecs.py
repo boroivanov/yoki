@@ -36,14 +36,23 @@ class Ecs(object):
         ecr = Ecr()
         images = {}
         for container in containers:
+            if container['name'] not in self.tags.keys():
+                continue
             image_uri = self.split_image_uri(container)
 
-            if image_uri['image'] not in self.tags.keys():
-                raise ValueError('Image not found in current task definition.')
-
-            if not ecr.verify_image(self.tags[image_uri['image']]):
-                raise
+            if 'dkr.ecr' in image_uri['repo']:
+                if not ecr.verify_image(image_uri['repo'].split('/')[1],
+                                        self.tags[container['name']]
+                                        ):
+                    raise
             images[container['name']] = image_uri
+
+        for name in self.tags.keys():
+            if name not in images:
+                raise ValueError(f'Container {name}'
+                                 f' not found in task definition'
+                                 f" {td['taskDefinitionArn']}.")
+
         return images
 
     def register_new_task_definition(self):
@@ -53,12 +62,12 @@ class Ecs(object):
            :return: New task definition name
            :rtype: str
         '''
-        srv = self.desc_service()
+        srv = self.describe_service()
         td_arn = srv['taskDefinition']
         td = self.describe_task_definition(td_arn)
-        current_images = self.verify_images(td)
+        new_images = self.verify_images(td)
 
-        new_td = self.create_new_task_definition(td, current_images)
+        new_td = self.create_new_task_definition(td, new_images)
         new_td_res = self.ecs.register_task_definition(**new_td)
         td_name = new_td_res['taskDefinition']['taskDefinitionArn'].split(
             '/')[-1]
@@ -74,7 +83,7 @@ class Ecs(object):
         }
         return self.ecs.update_service(**params)
 
-    def create_new_task_definition(self, td, current_images):
+    def create_new_task_definition(self, td, new_images):
         new_td = td.copy()
         for k in ['status', 'compatibilities', 'taskDefinitionArn',
                   'revision', 'requiresAttributes']:
@@ -82,8 +91,9 @@ class Ecs(object):
 
         # Update containers with the new image tags.
         for cd in new_td['containerDefinitions']:
-            cd['image'] = f"{current_images[cd['name']]['repo']}" \
-                f"{current_images[cd['name']]['image']}/" \
+            if cd['name'] not in new_images:
+                continue
+            cd['image'] = f"{new_images[cd['name']]['repo']}" \
                 f"{self.tags[cd['name']]}"
 
         return new_td
@@ -93,16 +103,10 @@ class Ecs(object):
         image_uri = {}
 
         try:
-            raw, image_uri['tag'] = raw.split(':')
+            image_uri['repo'], image_uri['tag'] = raw.split(':')
         except ValueError:
             # If no tag was specified - defaulting to latest tag.
+            image_uri['repo'] = raw
             image_uri['tag'] = 'latest'
-
-        try:
-            image_uri['repo'], image_uri['image'] = raw.split('/')
-            image_uri['repo'] = image_uri['repo'] + '/'
-        except ValueError:
-            # No repo specified.
-            image_uri['image'] = raw
 
         return image_uri

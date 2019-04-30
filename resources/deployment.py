@@ -6,6 +6,7 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 from encoders.decimal import decimal_to_dict
+from lib.ecs import Ecs
 
 
 DYNAMODB_TABLE_PREFIX = os.getenv('DYNAMODB_TABLE_PREFIX', 'dev-')
@@ -42,8 +43,9 @@ class Deployment(Resource):
 
     def post(self, cluster, service):
         data = self.parser.parse_args()
-        print(data)
-        return {'message': f'deploying to {cluster} {service} with {data}'}
+        ecs = Ecs(cluster, service, data['tags'])
+        ecs.deploy()
+        return {'message': f'Deploying to {cluster} {service} with {data}'}
 
 
 class DeploymentList(Resource):

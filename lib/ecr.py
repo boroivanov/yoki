@@ -7,16 +7,13 @@ class Ecr(object):
         session = boto3.session.Session()
         self.ecr = session.client('ecr')
 
-    def verify_images(self, repo, tags: list) -> bool:
-        if not isinstance(tags, list):
-            tags = [tags]
-
+    def verify_image(self, repo, tag) -> bool:
         try:
             self.ecr.describe_images(
                 repositoryName=repo,
                 imageIds=[
                     {
-                        'imageTag': tags
+                        'imageTag': tag
                     },
                 ],
                 filter={
