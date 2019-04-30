@@ -200,7 +200,7 @@ class SlackCommandHandler(Slack):
         except ImportError:
             return self.help()
 
-        return cmd.run()
+        return cmd.run(self.args)
 
     def help(self):
         return {'text': '\n'.join(self.list_commands())}
