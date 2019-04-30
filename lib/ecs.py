@@ -63,16 +63,12 @@ class Ecs(object):
            :rtype: str
         '''
         srv = self.describe_service()
-        td_arn = srv['taskDefinition']
-        td = self.describe_task_definition(td_arn)
+        td = self.describe_task_definition(srv['taskDefinition'])
         new_images = self.verify_images(td)
 
         new_td = self.create_new_task_definition(td, new_images)
-        new_td_res = self.ecs.register_task_definition(**new_td)
-        td_name = new_td_res['taskDefinition']['taskDefinitionArn'].split(
-            '/')[-1]
-
-        return td_name
+        res = self.ecs.register_task_definition(**new_td)
+        return res['taskDefinition']['taskDefinitionArn'].split('/')[-1]
 
     def deploy(self):
         params = {
