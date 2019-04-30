@@ -89,7 +89,7 @@ class Ecs(object):
         for cd in new_td['containerDefinitions']:
             if cd['name'] not in new_images:
                 continue
-            cd['image'] = f"{new_images[cd['name']]['repo']}" \
+            cd['image'] = f"{new_images[cd['name']]['repo']}:" \
                 f"{self.tags[cd['name']]}"
 
         return new_td
