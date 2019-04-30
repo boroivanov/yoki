@@ -140,7 +140,7 @@ class SlackTaskDigest(Slack):
     def post_to_slack(self):
         params = self.prepare_message()
 
-        notification = Notifications(self.region, self.deployment_id())
+        notification = Notifications(self.deployment_id())
         item = notification.get_item()
 
         if item:
@@ -159,7 +159,7 @@ class SlackTaskDigest(Slack):
     def update_notifications_item(self, slack_response):
         try:
             ts = slack_response['message']['ts']
-            item = Notifications(self.region, self.deployment_id(), ts)
+            item = Notifications(self.deployment_id(), ts)
             item.put_item()
         except KeyError:
             log.error('Error: Cannot get slack timestamp. Slack response:')
