@@ -13,21 +13,26 @@ log.setLevel(os.getenv('LOG_LEVEL', logging.INFO))
 class Notifications(object):
     table_name = DYNAMODB_TABLE_PREFIX + 'yoki-notifications'
 
-    def __init__(self, deployment_id, slack_ts='locked'):
+    def __init__(self, deployment_id, slack_ts='locked',
+                 cmd_response_url=None):
         self.dynamodb = boto3.resource('dynamodb')
         self.deployment_id = deployment_id
         self.slack_ts = slack_ts
+        self.cmd_response_url = cmd_response_url
         self.ttl = os.getenv('NOTIFICATION_ITEM_TTL', 2592000)
 
     def table(self):
         return self.dynamodb.Table(self.table_name)
 
     def as_dict(self):
-        return {
+        item = {
             'deployment': self.deployment_id,
             'slack_ts': self.slack_ts,
             'TTL': int(time.time()) + int(self.ttl),
         }
+        if self.cmd_response_url:
+            item['cmd_response_url'] = self.cmd_response_url
+        return item
 
     def get_item(self):
         try:
