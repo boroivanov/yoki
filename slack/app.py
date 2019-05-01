@@ -109,6 +109,10 @@ class SlackTaskDigest(Slack):
             f"{self.deployment['service']} - " \
             f"{' '.join(self.deployment['images'])}"
 
+    def message_title_cmd(self):
+        return f"{self.deployment['runningCount']}/" \
+            f"{self.deployment['desiredCount']} {self.message_title()} "
+
     def message_text(self):
         return f"running: {self.deployment['runningCount']}" \
             f" desired: {self.deployment['desiredCount']}" \
@@ -135,6 +139,20 @@ class SlackTaskDigest(Slack):
                         },
                     ],
                     'footer': self.message_footer(),
+                }
+            ]
+        }
+
+    def prepare_message_cmd_response(self, response_type='in_channel',
+                                     replace_original='true'):
+        return {
+            'response_type': response_type,
+            'replace_original': replace_original,
+            'attachments': [
+                {
+                    'title': self.message_title(),
+                    'title_link': self.srv_url(),
+                    'color': self.message_color(),
                 }
             ]
         }
@@ -167,9 +185,13 @@ class SlackTaskDigest(Slack):
         res = self.sc.api_call('chat.update', ts=ts, **params)
 
         if 'cmd_response_url' in item:
-            r = requests.post(item['cmd_response_url'], json=params)
-            log.info(f'Slack command response: {r.text}')
+            self.respond_to_command(item)
         return res
+
+    def respond_to_command(self, item):
+        params = self.prepare_message_cmd_response()
+        r = requests.post(item['cmd_response_url'], json=params)
+        log.info(f'Slack command response: {r.text}')
 
     def update_notifications_item(self, slack_response, saved_item=None):
         try:
