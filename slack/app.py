@@ -161,8 +161,7 @@ class SlackTaskDigest(Slack):
     def update_message(self, item, params):
         ts = item['slack_ts']
         if ts == 'locked':
-            log.info('Skipping post. Slack timestamp is locked.')
-            return False
+            return 'Skipping post. Slack timestamp is locked.'
         elif ts == 'pending':
             self.post_new_message(params, item)
         res = self.sc.api_call('chat.update', ts=ts, **params)
