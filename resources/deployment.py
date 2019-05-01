@@ -51,8 +51,7 @@ class Deployment(Resource):
 
         deployment_id = d['service']['deployments'][0]['id']
         return {'deployment_id': deployment_id,
-                'message': f'Deploying {deployment_id} to {cluster} '
-                f'{service} with {data}'}
+                'message': f'Deploying to {cluster} {service} with {data}'}
 
 
 class DeploymentList(Resource):
