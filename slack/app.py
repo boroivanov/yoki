@@ -1,6 +1,8 @@
+import ast
 import os
 import boto3
 import logging
+import requests
 import string
 import importlib
 
@@ -144,26 +146,45 @@ class SlackTaskDigest(Slack):
         item = notification.get_item()
 
         if item:
-            ts = item['slack_ts']
-            if ts == 'locked':
-                log.info('Skipping post. Slack timestamp is locked.')
-                return False
-            res = self.sc.api_call('chat.update', ts=ts, **params)
+            res = self.update_message(item, params)
         else:
-            res = self.sc.api_call('chat.postMessage', **params)
-            self.update_notifications_item(res)
+            res = self.post_new_message(params)
 
         log.info(f'Slack response is: {res}')
         return True
 
-    def update_notifications_item(self, slack_response):
+    def post_new_message(self, params, item=None):
+        res = self.sc.api_call('chat.postMessage', **params)
+        self.update_notifications_item(res, item)
+        return res
+
+    def update_message(self, item, params):
+        ts = item['slack_ts']
+        if ts == 'locked':
+            log.info('Skipping post. Slack timestamp is locked.')
+            return False
+        elif ts == 'pending':
+            self.post_new_message(params, item)
+        res = self.sc.api_call('chat.update', ts=ts, **params)
+
+        if 'cmd_response_url' in item:
+            r = requests.post(item['cmd_response_url'], json=params)
+            log.info(f'Slack command response: {r.text}')
+        return res
+
+    def update_notifications_item(self, slack_response, saved_item=None):
         try:
             ts = slack_response['message']['ts']
-            item = Notifications(self.deployment_id(), ts)
-            item.put_item()
         except KeyError:
             log.error('Error: Cannot get slack timestamp. Slack response:')
             log.error(slack_response)
+
+        if saved_item:
+            item = Notifications(saved_item['deployment'], ts,
+                                 saved_item['cmd_response_url'])
+        else:
+            item = Notifications(self.deployment_id(), ts)
+        item.put_item()
 
 
 class SlackCommandHandler(Slack):
@@ -200,7 +221,14 @@ class SlackCommandHandler(Slack):
         except ImportError:
             return self.help()
 
-        return cmd.run(self.args)
+        res = cmd.run(self.args)
+        data = ast.literal_eval(res['text'])
+        deployment_id = data['deployment_id']
+        item = Notifications(deployment_id, slack_ts='pending',
+                             cmd_response_url=self.params['response_url'])
+        item.put_item()
+
+        return res
 
     def help(self):
         return {'text': '\n'.join(self.list_commands())}
