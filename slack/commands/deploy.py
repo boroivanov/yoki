@@ -38,7 +38,7 @@ class SlackCommand(object):
         url = f'{YOKI_API}/clusters/{self.cluster}/services/{self.service}'
         r = requests.post(url, json={'tags': self.tags})
 
-        return {'text': f'{r.text}'}
+        return {'text': r.text}
 
     def help(self):
         return {'text': 'Usage: deploy [cluster] [service] [tags]...'}
