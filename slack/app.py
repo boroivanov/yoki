@@ -1,4 +1,3 @@
-import ast
 import os
 import boto3
 import logging
@@ -242,13 +241,7 @@ class SlackCommandHandler(Slack):
         except ImportError:
             return self.help()
 
-        res = cmd.run(self.args)
-        data = ast.literal_eval(res['text'])
-        deployment_id = data['deployment_id']
-        item = Notifications(deployment_id, slack_ts='pending',
-                             cmd_response_url=self.params['response_url'])
-        item.put_item()
-
+        res = cmd.run(self.args, self.params)
         return res
 
     def help(self):
