@@ -1,0 +1,30 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_ENV": "development",
+                "FLASK_APP": "${workspaceFolder}/app.py",
+                "DIGEST_ITEM_TTL": 2592000,
+                "STATE_ITEM_TTL": 86400,
+                "DYNAMODB_TABLE_PREFIX": "dev-",
+                "SLACK_TOKEN": "xoxp-2174539132-2764081608-450425213923-aea184b91e137d81cbfdf8f34825ef1b",
+                "SLACK_VERIFICATION_TOKEN": "ItQdwhvc8TRvRd7qpnVqAJOl",
+                "SLACK_CHANNEL": "slack-dev-apps",
+                "YOKI_API": "https://d522ae7d.ngrok.io"
+            },
+            "args": [
+                "run",
+                // "--no-debugger",
+                // "--no-reload"
+            ]
+        }
+    ]
+}
