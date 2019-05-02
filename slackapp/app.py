@@ -149,7 +149,7 @@ class SlackTaskDigest(Slack):
             'replace_original': replace_original,
             'attachments': [
                 {
-                    'title': self.message_title(),
+                    'title': self.message_title_cmd(),
                     'title_link': self.srv_url(),
                     'color': self.message_color(),
                 }
