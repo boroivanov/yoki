@@ -45,13 +45,14 @@ class SlackCommand(object):
         if 'deployment_id' in data:
             self.save_cmd_details(data, params)
 
-        return {'response_type': 'in_channel', 'text': data['message']}
+        return {'response_type': 'ephemeral', 'text': data['message']}
 
     def save_cmd_details(self, data, params):
         deployment_id = data['deployment_id']
-        item = Notifications(deployment_id, slack_ts='pending',
+        item = Notifications(deployment_id,
                              cmd_channel_id=params['channel_id'],
-                             cmd_response_url=params['response_url']
+                             cmd_response_url=params['response_url'],
+                             cmd_username=params['user_name']
                              )
         item.put_item()
 
