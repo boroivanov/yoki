@@ -248,7 +248,7 @@ class SlackCommandHandler(Slack):
         return {'text': '\n'.join(self.list_commands())}
 
     def get_command(self, module):
-        '''Dynamically load slack commands from slack/commands/
+        '''Dynamically load slack commands from slackapp/commands/
 
         :param module: Command filename
         :type module: str
@@ -256,14 +256,15 @@ class SlackCommandHandler(Slack):
         :rtype: class object
         '''
         try:
-            cmd_module = importlib.import_module(f'slack.commands.{module}')
+            path = f'slackapp.commands.{module}'
+            cmd_module = importlib.import_module(path)
             cmd_obj = getattr(cmd_module, 'SlackCommand')
             return cmd_obj()
         except ImportError:
             raise
 
     def list_commands(self):
-        '''List commands in slack/commands/
+        '''List commands in slackapp/commands/
 
         :return: Slack commands
         :rtype: list

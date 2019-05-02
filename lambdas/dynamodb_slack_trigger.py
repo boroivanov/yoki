@@ -2,7 +2,7 @@ import os
 import json
 import logging
 
-from slack.app import SlackTaskDigest
+from slackapp.app import SlackTaskDigest
 
 log = logging.getLogger()
 log.setLevel(os.getenv('LOG_LEVEL', logging.INFO))
