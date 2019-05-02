@@ -1,7 +1,6 @@
 import os
 import boto3
 import logging
-import requests
 import string
 import importlib
 
@@ -142,16 +141,16 @@ class SlackTaskDigest(Slack):
             ]
         }
 
-    def prepare_message_cmd_response(self, response_type='in_channel',
-                                     replace_original='true'):
+    def prepare_message_cmd_response(self, channel, rtype='in_channel'):
         return {
-            'response_type': response_type,
-            'replace_original': replace_original,
+            'channel': channel,
+            'response_type': rtype,
             'attachments': [
                 {
                     'title': self.message_title_cmd(),
                     'title_link': self.srv_url(),
                     'color': self.message_color(),
+                    'footer': self.message_footer(),
                 }
             ]
         }
@@ -178,21 +177,27 @@ class SlackTaskDigest(Slack):
     def update_message(self, item, params):
         ts = item['slack_ts']
         if ts == 'locked':
-            return 'Skipping post. Slack timestamp is locked.'
+            log.info('Skipping post. Slack timestamp is locked.')
         elif ts == 'pending':
             self.post_new_message(params, item)
         res = self.sc.api_call('chat.update', ts=ts, **params)
 
-        if 'cmd_response_url' in item:
+        if 'cmd_channel_id' in item:
             self.respond_to_command(item)
         return res
 
     def respond_to_command(self, item):
-        params = self.prepare_message_cmd_response()
-        r = requests.post(item['cmd_response_url'], json=params)
-        log.info(f'Slack command response: {r.text}')
+        params = self.prepare_message_cmd_response(item['cmd_channel_id'])
+        if 'cms_ts' in item:
+            res = self.sc.api_call('chat.update', ts=item['cmd_ts'], **params)
+        else:
+            res = self.sc.api_call('chat.postMessage', **params)
+            self.update_notifications_item(res, item, msg_ts_type='cmd_ts')
 
-    def update_notifications_item(self, slack_response, saved_item=None):
+        log.info(f'Slack command response: {res}')
+
+    def update_notifications_item(self, slack_response, saved_item=None,
+                                  msg_ts_type='slack_ts'):
         try:
             ts = slack_response['message']['ts']
         except KeyError:
@@ -200,8 +205,8 @@ class SlackTaskDigest(Slack):
             log.error(slack_response)
 
         if saved_item:
-            item = Notifications(saved_item['deployment'], ts,
-                                 saved_item['cmd_response_url'])
+            saved_item[msg_ts_type] = ts
+            item = Notifications(**saved_item)
         else:
             item = Notifications(self.deployment_id(), ts)
         item.put_item()
