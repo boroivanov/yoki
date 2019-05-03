@@ -81,12 +81,13 @@ class SlackCommand(object):
         return self.message(r.text)
 
     def help(self):
-        help_text = 'service groups - list all service groups\n' \
-            'service groups [group] - list a specific service group\n' \
-            'service groups [group] [service]... - create/update new group\n' \
-            'service groups [group] -d - delete a group'
+        help_text = 'Usage: `groups [group] [service]...`\n' \
+            'Options:\n\t-d\tDelete a group\n'
+        examples_text = 'Examples:\n' \
+            '`groups` - list all service groups\n' \
+            '`groups [group]` - list a specific service group\n' \
+            '`groups [group] [service]...` - create/update ' \
+            'new group with one or more services\n' \
+            '`groups [group] -d` - delete a group'
 
-        return {'text': 'Usage: groups [group] [service]...\n'
-                'Options:\n\t-d\tDelete a group',
-                'attachments': [{'text': help_text}]
-                }
+        return {'attachments': [{'text': help_text}, {'text': examples_text}]}
