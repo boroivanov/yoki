@@ -5,12 +5,11 @@ from lib.ecr import Ecr
 
 
 class Ecs(object):
-    def __init__(self, cluster, service, tags: dict):
+    def __init__(self, cluster, service):
         session = boto3.session.Session()
         self.ecs = session.client('ecs')
         self.cluster_name = cluster
         self.service_name = service
-        self.tags = tags
 
     def describe_service(self):
         try:
@@ -77,12 +76,21 @@ class Ecs(object):
         res = self.ecs.register_task_definition(**new_td)
         return res['taskDefinition']['taskDefinitionArn'].split('/')[-1]
 
-    def deploy(self):
+    def deploy(self, tags: dict):
+        self.tags = tags
         params = {
             'cluster': self.cluster_name,
             'service': self.service_name,
             'taskDefinition': self.register_new_task_definition(),
             'forceNewDeployment': True
+        }
+        return self.ecs.update_service(**params)
+
+    def scale(self, count):
+        params = {
+            'cluster': self.cluster_name,
+            'service': self.service_name,
+            'desiredCount': count,
         }
         return self.ecs.update_service(**params)
 
