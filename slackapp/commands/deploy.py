@@ -39,7 +39,8 @@ class SlackCommand(object):
             return self.help()
 
         url = f'{YOKI_API}/clusters/{self.cluster}/services/{self.service}'
-        r = requests.post(url, json={'tags': self.tags})
+        deploy_url = f'{url}/deploy'
+        r = requests.post(deploy_url, json={'tags': self.tags})
         data = ast.literal_eval(r.text)
 
         if 'deployment_id' in data:
