@@ -21,4 +21,4 @@ class Scale(Resource):
 
         deployment_id = d['service']['deployments'][0]['id']
         return {'deployment_id': deployment_id,
-                'message': f'Scaling to {cluster} {service} with {data}'}
+                'message': f'Scaling {cluster} {service} with {data}'}
