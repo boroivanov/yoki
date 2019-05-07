@@ -1,8 +1,13 @@
 import os
 import logging
 import boto3
+import threading
+import queue
+
 from botocore.exceptions import ClientError
 from flask_restful import Resource, reqparse
+
+from resources.deployment import Deployment
 
 
 log = logging.getLogger()
@@ -32,7 +37,7 @@ class ServiceGroup(Resource):
             }
             return {'serviceGroup': self.table.get_item(**params)['Item']}
         except KeyError:
-            return {'serviceGroup': 'Not found.'}, 404
+            return {'message': f'Group not found: {group}'}, 404
         except ClientError as e:
             log.error(f'[{self.__class__.__name__}] {e}')
             return {'message': 'Error getting item.'}, 500
@@ -69,3 +74,42 @@ class ServiceGroupList(Resource):
         except ClientError as e:
             log.error(f'[{self.__class__.__name__}] {e}')
             return {'message': 'Error getting items.'}, 500
+
+
+class ServiceGroupDeploy(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('tags',
+                        type=dict,
+                        required=True,
+                        help='Tags cannot be blank.')
+
+    def post(self, cluster, group):
+        data = self.parser.parse_args()
+        sg = ServiceGroup()
+        res = sg.get(group)
+
+        if isinstance(res, tuple):
+            return res[0]
+
+        services = res['serviceGroup']['services'][0].split()
+        messages = self.bulk_create_deployment(cluster, services, data)
+        return {'messages': messages}
+
+    def bulk_create_deployment(self, cluster, services: list, tags: dict):
+        q = queue.Queue()
+        threads = []
+        d = Deployment()
+
+        for service in services:
+            t = threading.Thread(target=self.create_deployment,
+                                 args=(d, cluster, service, tags, q))
+            t.start()
+            threads.append(t)
+
+        [t.join() for t in threads]
+        return [q.get(t) for t in threads]
+
+    def create_deployment(self, d: Deployment, cluster, service, tags: dict,
+                          q: queue):
+        res = d.create_deployment(cluster, service, tags)
+        q.put(res)

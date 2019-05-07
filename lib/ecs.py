@@ -49,8 +49,7 @@ class Ecs(object):
 
         for name in self.tags.keys():
             if name not in images:
-                raise ValueError(f'[{self.cluster_name} {self.service_name}]:'
-                                 f' Container {name}'
+                raise ValueError(f' Container {name}'
                                  f' not found in task definition'
                                  f" {td['taskDefinitionArn']}.")
 
