@@ -12,14 +12,14 @@ class SlackCommand(object):
 
     def run(self, args, params):
         try:
-            cluster, service, count = self.args
+            cluster, service, count = args
             count = int(count)
         except ValueError:
             return self.help()
 
-        url = f'{YOKI_API}/clusters/{self.cluster}/services/{self.service}'
-        scale_url = f'{url}/scale'
-        r = requests.post(scale_url, json={'count': count})
+        url = f'{YOKI_API}/clusters/{cluster}/services/{service}/scale'
+        r = requests.post(url, json={'count': count})
+        print(r.text)
         data = ast.literal_eval(r.text)
 
         if 'deployment_id' in data:
