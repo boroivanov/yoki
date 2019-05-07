@@ -27,8 +27,8 @@ DeploymentList_routes = [
 ]
 api.add_resource(DeploymentList, *DeploymentList_routes)
 api.add_resource(Scale, f'{CL_SRV}/scale')
-api.add_resource(ServiceGroup, '/service-groups/<string:group>')
-api.add_resource(ServiceGroupList, '/service-groups')
+api.add_resource(ServiceGroup, '/groups/<string:group>')
+api.add_resource(ServiceGroupList, '/groups')
 api.add_resource(Slack, '/slack')
 
 

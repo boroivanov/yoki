@@ -8,22 +8,22 @@ YOKI_API = os.getenv('YOKI_API')
 
 class SlackCommand(object):
     def _list_all_groups(self, args):
-        url = f'{YOKI_API}/service-groups'
+        url = f'{YOKI_API}/groups'
         return requests.get(url)
 
     def _list_group(self, args):
-        url = f'{YOKI_API}/service-groups/{args[0]}'
+        url = f'{YOKI_API}/groups/{args[0]}'
         return requests.get(url)
 
     def _store_new_group(self, args):
         self.color = 'good'
-        url = f'{YOKI_API}/service-groups/{args[0]}'
+        url = f'{YOKI_API}/groups/{args[0]}'
         services = ' '.join(args[1:])
         return requests.post(url, json={'services': services})
 
     def _delete_group(self, args):
         self.color = 'warning'
-        url = f'{YOKI_API}/service-groups/{args[0]}'
+        url = f'{YOKI_API}/groups/{args[0]}'
         r = self._list_group(args)
         requests.delete(url)
         return r
