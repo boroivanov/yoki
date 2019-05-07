@@ -43,9 +43,9 @@ class Deployment(Resource):
 
     def post(self, cluster, service):
         data = self.parser.parse_args()
-        ecs = Ecs(cluster, service, data['tags'])
+        ecs = Ecs(cluster, service)
         try:
-            d = ecs.deploy()
+            d = ecs.deploy(**data)
         except ValueError as e:
             return {'message': str(e)}
 
