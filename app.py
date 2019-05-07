@@ -3,7 +3,7 @@ from flask_restful import Api
 
 from resources.deployment import Deployment, DeploymentList
 from resources.scale import Scale
-from resources.service_group import ServiceGroup, ServiceGroupList
+from resources.group import ServiceGroup, ServiceGroupList
 from resources.slack import Slack
 
 app = Flask(__name__)
