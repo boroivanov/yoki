@@ -20,11 +20,11 @@ class Ecs(object):
             return res['services'][0]
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFoundException':
-                raise ValueError('Cluster not found.')
+                raise ValueError(f'Cluster not found: {self.cluster_name}')
             else:
                 raise RuntimeError(e)
         except IndexError:
-            raise ValueError('Service not found.')
+            raise ValueError(f'Service not found: {self.service_name}')
 
     def describe_task_definition(self, taskDefinition):
         res = self.ecs.describe_task_definition(taskDefinition=taskDefinition)
@@ -49,7 +49,7 @@ class Ecs(object):
 
         for name in self.tags.keys():
             if name not in images:
-                raise ValueError(f'Container {name}'
+                raise ValueError(f' Container {name}'
                                  f' not found in task definition'
                                  f" {td['taskDefinitionArn']}.")
 

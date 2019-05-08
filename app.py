@@ -3,7 +3,7 @@ from flask_restful import Api
 
 from resources.deployment import Deployment, DeploymentList
 from resources.scale import Scale
-from resources.service_group import ServiceGroup, ServiceGroupList
+from resources.group import ServiceGroup, ServiceGroupList, ServiceGroupDeploy
 from resources.slack import Slack
 
 app = Flask(__name__)
@@ -11,6 +11,7 @@ api = Api(app)
 
 CL = '/clusters/<string:cluster>'
 CL_SRV = f'{CL}/services/<string:service>'
+CL_GRP = f'{CL}/groups/<string:group>'
 CL_SRV_DEPL = f'{CL_SRV}/<string:deployment>'
 
 
@@ -27,8 +28,12 @@ DeploymentList_routes = [
 ]
 api.add_resource(DeploymentList, *DeploymentList_routes)
 api.add_resource(Scale, f'{CL_SRV}/scale')
-api.add_resource(ServiceGroup, '/service-groups/<string:group>')
-api.add_resource(ServiceGroupList, '/service-groups')
+
+# Groups
+api.add_resource(ServiceGroup, '/groups/<string:group>')
+api.add_resource(ServiceGroupList, '/groups')
+api.add_resource(ServiceGroupDeploy, f'{CL_GRP}/deploy')
+
 api.add_resource(Slack, '/slack')
 
 
