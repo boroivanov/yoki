@@ -13,6 +13,9 @@ class Scale(Resource):
 
     def post(self, cluster, service):
         data = self.parser.parse_args()
+        return self.scale_service(cluster, service, data)
+
+    def scale_service(self, cluster, service, data):
         ecs = Ecs(cluster, service)
         try:
             d = ecs.scale(**data)
