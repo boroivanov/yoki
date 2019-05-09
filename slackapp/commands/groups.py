@@ -5,6 +5,8 @@ import requests
 
 YOKI_API = os.getenv('YOKI_API')
 
+help_text = 'Manage service groups.'
+
 
 class SlackCommand(object):
     def _list_all_groups(self, args):

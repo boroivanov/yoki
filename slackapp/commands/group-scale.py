@@ -7,6 +7,8 @@ from models.notifications import Notifications
 
 YOKI_API = os.getenv('YOKI_API')
 
+help_text = 'Scale a service group.'
+
 
 class SlackCommand(object):
 

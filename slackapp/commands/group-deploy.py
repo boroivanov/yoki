@@ -1,6 +1,9 @@
 from slackapp.lib.command_helpers import DeployCommand
 
 
+help_text = 'Deploy to one or more containers in a group.'
+
+
 class SlackCommand(DeployCommand):
 
     def run(self, args, params):

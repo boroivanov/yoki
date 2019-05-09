@@ -237,9 +237,9 @@ class SlackCommandHandler(Slack):
         return res
 
     def help(self):
-        return {'text': '\n'.join(self.list_commands())}
+        return {'text': str(self.list_commands())}
 
-    def get_command(self, module):
+    def get_command(self, module, obj_type='SlackCommand'):
         '''Dynamically load slack commands from slackapp/commands/
 
         :param module: Command filename
@@ -250,9 +250,14 @@ class SlackCommandHandler(Slack):
         try:
             path = f'slackapp.commands.{module}'
             cmd_module = importlib.import_module(path)
-            cmd_obj = getattr(cmd_module, 'SlackCommand')
-            return cmd_obj()
+            obj = getattr(cmd_module, obj_type)
+
+            if obj_type == 'SlackCommand':
+                return obj()
+            return obj
         except ImportError:
+            raise
+        except AttributeError:
             raise
 
     def list_commands(self):
@@ -265,6 +270,15 @@ class SlackCommandHandler(Slack):
         alpha = string.ascii_letters
         for filename in os.listdir(self.commands_path):
             if filename.startswith(tuple(alpha)) and filename.endswith('.py'):
-                commands.append(filename[:-3])
-        commands.sort()
-        return commands
+                cmd = filename[:-3]
+                commands.append({
+                    'command': cmd,
+                    'help': self.get_command_help_text(cmd),
+                })
+        return '\n'.join([f"`{i['command']}`{i['help']}" for i in commands])
+
+    def get_command_help_text(self, command):
+        try:
+            return f" - {self.get_command(command, 'help_text')}"
+        except AttributeError:
+            return ''
