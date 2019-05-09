@@ -20,7 +20,7 @@ class Scale(Resource):
         try:
             d = ecs.scale(**data)
         except ValueError as e:
-            return {'message': str(e)}
+            return {'message': f'[{cluster} {service}]: {str(e)}'}
 
         deployment_id = d['service']['deployments'][0]['id']
         return {'deployment_id': deployment_id,
