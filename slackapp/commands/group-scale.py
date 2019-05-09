@@ -2,7 +2,6 @@ import ast
 import os
 import requests
 
-from resources.group import ServiceGroup
 from models.notifications import Notifications
 
 
@@ -18,32 +17,22 @@ class SlackCommand(object):
         except ValueError:
             return self.help()
 
-        sg = ServiceGroup()
-        res = sg.get(group)
+        res = self.scale_service_group(cluster, group, count)
 
-        if isinstance(res, tuple):
-            return {'text': res[0]}
-
-        services = res['serviceGroup']['services'][0].split()
-
-        messages = []
-        for service in services:
-            msg = self.scale_service(cluster, group, count, params)
-            messages.append(msg)
+        if 'message' in res:
+            return {'attachments': [{'text': res['message']}]}
 
         attachments = []
-        for msg in messages:
+        for msg in res['messages']:
             attachments.append({'text': msg['message']})
+            self.save_cmd_details(msg, params)
 
         return {'attachments': attachments}
 
-    def scale_service(self, cluster, group, count, params):
+    def scale_service_group(self, cluster, group, count):
         url = f'{YOKI_API}/clusters/{cluster}/groups/{group}/scale'
         r = requests.post(url, json={'count': count})
         data = ast.literal_eval(r.text)
-
-        if 'deployment_id' in data:
-            self.save_cmd_details(data, params)
 
         return data
 
