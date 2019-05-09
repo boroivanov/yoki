@@ -1,5 +1,4 @@
 from slackapp.lib.command_helpers import DeployCommand
-from resources.group import ServiceGroup
 
 
 class SlackCommand(DeployCommand):
@@ -10,21 +9,13 @@ class SlackCommand(DeployCommand):
         except IndexError:
             return self.help()
 
-        sg = ServiceGroup()
-        res = sg.get(self.service)
+        res = self.create_deployment(self.service, params, dtype='groups')
 
-        if isinstance(res, tuple):
-            return {'text': res[0]}
-
-        services = res['serviceGroup']['services'][0].split()
-
-        messages = []
-        for service in services:
-            msg = self.create_deployment(service, params)
-            messages.append(msg)
+        if 'message' in res:
+            return {'attachments': [{'text': res['message']}]}
 
         attachments = []
-        for msg in messages:
+        for msg in res['messages']:
             attachments.append({'text': msg['message']})
 
         return {'attachments': attachments}

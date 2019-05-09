@@ -32,25 +32,29 @@ class DeployCommand(object):
             parsed[container] = tag
         return parsed
 
-    def create_deployment(self, service, params):
-        url = f'{YOKI_API}/clusters/{self.cluster}/services/{service}'
+    def create_deployment(self, service, params, dtype='services'):
+        url = f'{YOKI_API}/clusters/{self.cluster}/{dtype}/{service}'
         deploy_url = f'{url}/deploy'
         r = requests.post(deploy_url, json={'tags': self.tags})
         data = ast.literal_eval(r.text)
 
-        if 'deployment_id' in data:
+        if 'messages' in data:
+            for msg in data['messages']:
+                self.save_cmd_details(msg, params)
+        else:
             self.save_cmd_details(data, params)
 
         return data
 
     def save_cmd_details(self, data, params):
-        deployment_id = data['deployment_id']
-        item = Notifications(deployment_id,
-                             cmd_channel_id=params['channel_id'],
-                             cmd_response_url=params['response_url'],
-                             cmd_username=params['user_name']
-                             )
-        item.put_item()
+        if 'deployment_id' in data:
+            deployment_id = data['deployment_id']
+            item = Notifications(deployment_id,
+                                 cmd_channel_id=params['channel_id'],
+                                 cmd_response_url=params['response_url'],
+                                 cmd_username=params['user_name']
+                                 )
+            item.put_item()
 
     def help(self):
         help_text = 'Usage: `deploy [cluster] [service] [tags]...`\n'
