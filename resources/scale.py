@@ -13,11 +13,14 @@ class Scale(Resource):
 
     def post(self, cluster, service):
         data = self.parser.parse_args()
+        return self.scale_service(cluster, service, data)
+
+    def scale_service(self, cluster, service, data):
         ecs = Ecs(cluster, service)
         try:
             d = ecs.scale(**data)
         except ValueError as e:
-            return {'message': str(e)}
+            return {'message': f'[{cluster} {service}]: {str(e)}'}
 
         deployment_id = d['service']['deployments'][0]['id']
         return {'deployment_id': deployment_id,

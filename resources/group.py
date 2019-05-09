@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 from flask_restful import Resource, reqparse
 
 from resources.deployment import Deployment
+from resources.scale import Scale
 
 
 log = logging.getLogger()
@@ -112,4 +113,44 @@ class ServiceGroupDeploy(Resource):
     def create_deployment(self, d: Deployment, cluster, service, tags: dict,
                           q: queue):
         res = d.create_deployment(cluster, service, tags)
+        q.put(res)
+
+
+class ServiceGroupScale(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('count',
+                        type=int,
+                        required=True,
+                        help='Count cannot be blank.'
+                        )
+
+    def post(self, cluster, group):
+        data = self.parser.parse_args()
+        sg = ServiceGroup()
+        res = sg.get(group)
+
+        if isinstance(res, tuple):
+            return res[0]
+
+        services = res['serviceGroup']['services'][0].split()
+        messages = self.bulk_scale_service(cluster, services, data)
+        return {'messages': messages}
+
+    def bulk_scale_service(self, cluster, services: list, count: int):
+        q = queue.Queue()
+        threads = []
+        scl = Scale()
+
+        for service in services:
+            t = threading.Thread(target=self.scale_service,
+                                 args=(scl, cluster, service, count, q))
+            t.start()
+            threads.append(t)
+
+        [t.join() for t in threads]
+        return [q.get(t) for t in threads]
+
+    def scale_service(self, scl: Scale, cluster, service, count: int,
+                      q: queue):
+        res = scl.scale_service(cluster, service, count)
         q.put(res)
