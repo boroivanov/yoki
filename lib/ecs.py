@@ -92,7 +92,15 @@ class Ecs(object):
             'service': self.service_name,
             'desiredCount': count,
         }
-        return self.ecs.update_service(**params)
+        try:
+            return self.ecs.update_service(**params)
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ClusterNotFoundException':
+                raise ValueError(f'Cluster not found: {self.cluster_name}')
+            else:
+                raise RuntimeError(e)
+        except IndexError:
+            raise ValueError(f'Service not found: {self.service_name}')
 
     def create_new_task_definition(self, td, new_images):
         new_td = td.copy()
