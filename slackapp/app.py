@@ -275,6 +275,8 @@ class SlackCommandHandler(Slack):
                     'command': cmd,
                     'help': self.get_command_help_text(cmd),
                 })
+
+        commands = sorted(commands, key=lambda i: i['command'])
         return '\n'.join([f"`{i['command']}`{i['help']}" for i in commands])
 
     def get_command_help_text(self, command):
