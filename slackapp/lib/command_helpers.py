@@ -53,6 +53,7 @@ class DeployCommand(object):
                                  cmd_response_url=params['response_url'],
                                  cmd_username=params['user_name']
                                  )
+            item.put_item()
 
     def help(self):
         help_text = 'Usage: `deploy [cluster] [service] [tags]...`\n'
