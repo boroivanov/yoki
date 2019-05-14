@@ -126,6 +126,9 @@ class ServiceGroupScale(Resource):
 
     def post(self, cluster, group):
         data = self.parser.parse_args()
+        return self.scale_service_group(cluster, group, data)
+
+    def scale_service_group(self, cluster, group, data):
         sg = ServiceGroup()
         res = sg.get(group)
 

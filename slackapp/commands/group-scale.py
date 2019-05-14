@@ -1,11 +1,6 @@
-import ast
-import os
-import requests
-
+from resources.group import ServiceGroupScale
 from models.notifications import Notifications
 
-
-YOKI_API = os.getenv('YOKI_API')
 
 help_text = 'Scale a service group.'
 
@@ -27,19 +22,19 @@ class SlackCommand(object):
         attachments = []
         for msg in res['messages']:
             attachments.append({'text': msg['message']})
-            self.save_cmd_details(msg, params)
+            if 'deployment_id' in msg:
+                self.save_cmd_details(msg['deployment_id'], params)
 
         return {'attachments': attachments}
 
     def scale_service_group(self, cluster, group, count):
-        url = f'{YOKI_API}/clusters/{cluster}/groups/{group}/scale'
-        r = requests.post(url, json={'count': count})
-        data = ast.literal_eval(r.text)
+        scale = ServiceGroupScale()
+        data = scale.scale_service_group(cluster, group, {'count': count})
+        print(f'DATA: {data}')
 
         return data
 
-    def save_cmd_details(self, data, params):
-        deployment_id = data['deployment_id']
+    def save_cmd_details(self, deployment_id, params):
         item = Notifications(deployment_id,
                              cmd_channel_id=params['channel_id'],
                              cmd_response_url=params['response_url'],
