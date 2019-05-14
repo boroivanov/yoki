@@ -35,7 +35,7 @@ class Ecs(object):
         ecr = Ecr()
         images = {}
         for e, container in enumerate(containers):
-            self.rename_positional_containers(str(e), container)
+            self.rename_positional_containers(e, container)
             if container['name'] not in self.tags.keys():
                 continue
             image_uri = self.split_image_uri(container)

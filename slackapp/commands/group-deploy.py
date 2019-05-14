@@ -12,7 +12,7 @@ class SlackCommand(DeployCommand):
         except IndexError:
             return self.help()
 
-        res = self.create_deployment(self.service, params, dtype='groups')
+        res = self.create_group_deployment(self.service, params)
 
         if 'message' in res:
             return {'attachments': [{'text': res['message']}]}

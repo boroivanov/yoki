@@ -1,11 +1,6 @@
-import ast
-import os
-import requests
-
+from resources.deployment import Deployment
+from resources.group import ServiceGroupDeploy
 from models.notifications import Notifications
-
-
-YOKI_API = os.getenv('YOKI_API')
 
 
 class DeployCommand(object):
@@ -32,18 +27,22 @@ class DeployCommand(object):
             parsed[container] = tag
         return parsed
 
-    def create_deployment(self, service, params, dtype='services'):
-        url = f'{YOKI_API}/clusters/{self.cluster}/{dtype}/{service}'
-        deploy_url = f'{url}/deploy'
-        r = requests.post(deploy_url, json={'tags': self.tags})
-        data = ast.literal_eval(r.text)
+    def create_deployment(self, service, params):
+        deploy = Deployment()
+        data = deploy.create_deployment(self.cluster, service,
+                                        {'tags': self.tags})
+        self.save_cmd_details(data, params)
+        return data
 
-        if 'messages' in data:
-            for msg in data['messages']:
-                self.save_cmd_details(msg, params)
-        else:
-            self.save_cmd_details(data, params)
+    def create_group_deployment(self, group, params):
+        deploy = ServiceGroupDeploy()
+        data = deploy.deploy_service_group(self.cluster, group,
+                                           {'tags': self.tags})
+        if 'message' in data:
+            return {'message': data['message']}
 
+        for msg in data['messages']:
+            self.save_cmd_details(msg, params)
         return data
 
     def save_cmd_details(self, data, params):
@@ -54,7 +53,6 @@ class DeployCommand(object):
                                  cmd_response_url=params['response_url'],
                                  cmd_username=params['user_name']
                                  )
-            item.put_item()
 
     def help(self):
         help_text = 'Usage: `deploy [cluster] [service] [tags]...`\n'

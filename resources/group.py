@@ -86,6 +86,9 @@ class ServiceGroupDeploy(Resource):
 
     def post(self, cluster, group):
         data = self.parser.parse_args()
+        return self.deploy_service_group(cluster, group, data)
+
+    def deploy_service_group(self, cluster, group, data):
         sg = ServiceGroup()
         res = sg.get(group)
 
