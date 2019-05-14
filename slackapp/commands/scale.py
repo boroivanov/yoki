@@ -1,11 +1,6 @@
-import ast
-import os
-import requests
-
+from resources.scale import Scale
 from models.notifications import Notifications
 
-
-YOKI_API = os.getenv('YOKI_API')
 
 help_text = 'Scale a service.'
 
@@ -19,9 +14,8 @@ class SlackCommand(object):
         except ValueError:
             return self.help()
 
-        url = f'{YOKI_API}/clusters/{cluster}/services/{service}/scale'
-        r = requests.post(url, json={'count': count})
-        data = ast.literal_eval(r.text)
+        scale = Scale()
+        data = scale.scale_service(cluster, service, {'count': count})
 
         if 'deployment_id' in data:
             self.save_cmd_details(data, params)
