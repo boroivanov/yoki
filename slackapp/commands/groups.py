@@ -1,34 +1,29 @@
-import ast
-import os
-import requests
+from resources.group import ServiceGroup, ServiceGroupList
 
-
-YOKI_API = os.getenv('YOKI_API')
 
 help_text = 'Manage service groups.'
 
 
 class SlackCommand(object):
     def _list_all_groups(self, args):
-        url = f'{YOKI_API}/groups'
-        return requests.get(url)
+        sg_list = ServiceGroupList()
+        return sg_list.get()
 
     def _list_group(self, args):
-        url = f'{YOKI_API}/groups/{args[0]}'
-        return requests.get(url)
+        sg = ServiceGroup()
+        return sg.get_group(args[0])
 
     def _store_new_group(self, args):
         self.color = 'good'
-        url = f'{YOKI_API}/groups/{args[0]}'
-        services = ' '.join(args[1:])
-        return requests.post(url, json={'services': services})
+        sg = ServiceGroup()
+        return sg.update_group(args[0], {'services': args[1:]})
 
     def _delete_group(self, args):
         self.color = 'warning'
-        url = f'{YOKI_API}/groups/{args[0]}'
-        r = self._list_group(args)
-        requests.delete(url)
-        return r
+        sg = ServiceGroup()
+        res = sg.get_group(args[0])
+        sg.delete_group(args[0])
+        return res
 
     def create_service_group_line(self, sg):
         services = ' '.join(sg['services'])
@@ -68,19 +63,18 @@ class SlackCommand(object):
         if len(args) == 1:
             if args[0] == 'help':
                 return self.help()
-            r = self._list_group(args)
+            res = self._list_group(args)
         elif len(args) >= 2:
             if args[-1] == '-d':
-                r = self._delete_group(args)
+                res = self._delete_group(args)
             else:
-                r = self._store_new_group(args)
+                res = self._store_new_group(args)
         else:
-            r = self._list_all_groups(args)
+            res = self._list_all_groups(args)
 
-        data = ast.literal_eval(r.text)
-        if 'serviceGroups' in data or 'serviceGroup' in data:
-            return self.prepare_message(data)
-        return self.message(r.text)
+        if 'serviceGroups' in res or 'serviceGroup' in res:
+            return self.prepare_message(res)
+        return self.message(res[0]['message'])
 
     def help(self):
         help_text = 'Usage: `groups [group] [service]...`\n' \

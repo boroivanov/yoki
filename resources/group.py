@@ -32,6 +32,17 @@ class ServiceGroup(Resource):
                         )
 
     def get(self, group):
+        return self.get_group(group)
+
+    def post(self, group):
+        data = self.parser.parse_args()
+        res = self.update_group(group, data)
+        return res
+
+    def delete(self, group):
+        return self.delete_group(group)
+
+    def get_group(self, group):
         try:
             params = {
                 'Key': {'group': group},
@@ -43,11 +54,10 @@ class ServiceGroup(Resource):
             log.error(f'[{self.__class__.__name__}] {e}')
             return {'message': 'Error getting item.'}, 500
 
-    def post(self, group):
-        data = self.parser.parse_args()
+    def update_group(self, group, services: dict):
         item = {'group': group}
-        item.update(data)
-
+        print(f'SERVICES {services}')
+        item.update(services)
         try:
             self.table.put_item(Item=item)
             return {'serviceGroup': item}
@@ -55,7 +65,7 @@ class ServiceGroup(Resource):
             log.error(f'[{self.__class__.__name__}] {e}')
             return {'message': 'Error saving item.'}, 500
 
-    def delete(self, group):
+    def delete_group(self, group):
         try:
             self.table.delete_item(Key={'group': group})
             return {'message': 'Item deleted.'}
