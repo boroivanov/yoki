@@ -30,8 +30,6 @@ class SlackCommand(object):
     def scale_service_group(self, cluster, group, count):
         scale = ServiceGroupScale()
         data = scale.scale_service_group(cluster, group, {'count': count})
-        print(f'DATA: {data}')
-
         return data
 
     def save_cmd_details(self, deployment_id, params):

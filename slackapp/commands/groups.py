@@ -16,7 +16,9 @@ class SlackCommand(object):
     def _store_new_group(self, args):
         self.color = 'good'
         sg = ServiceGroup()
-        return sg.update_group(args[0], {'services': args[1:]})
+        services = []
+        services.append(' '.join(args[1:]))
+        return sg.update_group(args[0], {'services': services})
 
     def _delete_group(self, args):
         self.color = 'warning'
