@@ -33,6 +33,7 @@ provider:
         - dynamodb:GetRecords
         - dynamodb:GetShardIterator
         - dynamodb:ListStreams
+        - dynamodb:DeleteItem
       Resource:
         - arn:aws:dynamodb:*:*:table/${self:custom.instance_state_table}
         - arn:aws:dynamodb:*:*:table/${self:custom.task_state_table}
