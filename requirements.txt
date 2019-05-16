@@ -4,3 +4,5 @@ boto3>=1.9.128
 slackclient==2.0.0
 requests>=2.21.0
 websocket-client>=0.56.0
+warrant==0.6.1
+cognitojwt==1.1.0

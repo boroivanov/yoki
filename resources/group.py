@@ -6,6 +6,7 @@ import queue
 
 from botocore.exceptions import ClientError
 from flask_restful import Resource, reqparse
+from flask_cognito import cognito_auth_required
 
 from resources.deployment import Deployment
 from resources.scale import Scale
@@ -31,14 +32,17 @@ class ServiceGroup(Resource):
                         help='Services cannot be blank.'
                         )
 
+    @cognito_auth_required
     def get(self, group):
         return self.get_group(group)
 
+    @cognito_auth_required
     def post(self, group):
         data = self.parser.parse_args()
         res = self.update_group(group, data)
         return res
 
+    @cognito_auth_required
     def delete(self, group):
         return self.delete_group(group)
 
@@ -79,6 +83,7 @@ class ServiceGroupList(Resource):
     table_name = DYNAMODB_TABLE_PREFIX + 'yoki-service-groups'
     table = dynamodb.Table(table_name)
 
+    @cognito_auth_required
     def get(self):
         try:
             return {'serviceGroups': self.table.scan()['Items']}
@@ -94,6 +99,7 @@ class ServiceGroupDeploy(Resource):
                         required=True,
                         help='Tags cannot be blank.')
 
+    @cognito_auth_required
     def post(self, cluster, group):
         data = self.parser.parse_args()
         return self.deploy_service_group(cluster, group, data)
@@ -137,6 +143,7 @@ class ServiceGroupScale(Resource):
                         help='Count cannot be blank.'
                         )
 
+    @cognito_auth_required
     def post(self, cluster, group):
         data = self.parser.parse_args()
         return self.scale_service_group(cluster, group, data)
