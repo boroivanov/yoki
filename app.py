@@ -13,6 +13,7 @@ from resources.group import (
     ServiceGroupScale
 )
 from resources.slack import Slack
+from resources.auth import Auth
 
 app = Flask(__name__)
 api = Api(app)
@@ -59,6 +60,7 @@ api.add_resource(ServiceGroupScale, f'{CL_GRP}/scale')
 
 api.add_resource(Slack, '/slack')
 
+api.add_resource(Auth, '/auth')
 
 if __name__ == "__main__":
     app.run()
