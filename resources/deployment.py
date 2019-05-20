@@ -2,6 +2,8 @@ import os
 import logging
 import boto3
 from flask_restful import Resource, reqparse
+from flask_cognito import cognito_auth_required
+
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
@@ -27,6 +29,7 @@ class Deployment(Resource):
                         help='Tags dict cannot be blank.'
                         )
 
+    @cognito_auth_required
     def get(self, cluster, service, deployment):
         try:
             params = {
@@ -41,6 +44,7 @@ class Deployment(Resource):
             log.error(f'[{self.__class__.__name__}] {e}')
             return {'message': 'Error getting item.'}, 500
 
+    @cognito_auth_required
     def post(self, cluster, service):
         data = self.parser.parse_args()
         return self.create_deployment(cluster, service, data)
@@ -62,6 +66,7 @@ class DeploymentList(Resource):
     table_name = DYNAMODB_TABLE_PREFIX + 'yoki-ECSTaskDigest'
     table = dynamodb.Table(table_name)
 
+    @cognito_auth_required
     def get(self, cluster=None, service=None):
         params = {
             'IndexName': 'cluster-service-index',

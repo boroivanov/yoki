@@ -184,3 +184,63 @@ resources:
         KeySchema:
           - AttributeName: group
             KeyType: HASH
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${opt:stage, 'dev'}-${self:service}-user-pool
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: True
+          UnusedAccountValidityDays: 7
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 25
+            RequireLowercase: True
+            RequireNumbers: True
+            RequireSymbols: True
+            RequireUppercase: True
+        Schema:
+          - AttributeDataType: String
+            Mutable: False
+            Name: email
+            Required: True
+          - AttributeDataType: String
+            Mutable: False
+            Name: given_name
+            Required: True
+          - AttributeDataType: String
+            Mutable: False
+            Name: family_name
+            Required: True
+          - AttributeDataType: String
+            Mutable: False
+            Name: slack_username
+            Required: False
+          - AttributeDataType: String
+            Mutable: False
+            Name: user_arn
+            Required: False
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${opt:stage, 'dev'}-${self:service}-user-pool-client
+        UserPoolId:
+          Ref: CognitoUserPool
+        ExplicitAuthFlows:
+          - ADMIN_NO_SRP_AUTH
+        GenerateSecret: false
+
+
+  Outputs:
+    UserPoolId:
+      Value:
+        Ref: CognitoUserPool
+
+    UserPoolClientId:
+      Value:
+        Ref: CognitoUserPoolClient

@@ -1,4 +1,5 @@
 from flask_restful import Resource, reqparse
+from flask_cognito import cognito_auth_required
 
 from lib.ecs import Ecs
 
@@ -11,6 +12,7 @@ class Scale(Resource):
                         help='Count cannot be blank.'
                         )
 
+    @cognito_auth_required
     def post(self, cluster, service):
         data = self.parser.parse_args()
         return self.scale_service(cluster, service, data)
