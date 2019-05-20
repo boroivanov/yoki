@@ -112,9 +112,8 @@ class SlackTaskDigest(Slack):
             f"{self.deployment['desiredCount']} {self.message_title()} "
 
     def message_text(self):
-        return f"running: {self.deployment['runningCount']}" \
-            f" desired: {self.deployment['desiredCount']}" \
-            f"  pending: {self.deployment['pendingCount']}"
+        return f" desired: {self.deployment['desiredCount']}" \
+            f"  {self.container_stats()}"
 
     def message_footer(self):
         return f"ecs {self.deployment['launchType'].lower()}" \
@@ -128,17 +127,10 @@ class SlackTaskDigest(Slack):
             'channel': self.get_slack_channel_id(self.channel),
             'attachments': [
                 {
-                    'title': self.message_title(),
+                    'title': self.message_title_cmd(),
                     'title_link': self.srv_url(),
                     'color': self.message_color(),
                     'text': self.message_text(),
-                    'fields': [
-                        {
-                            'title': 'Container Stats',
-                            'value': self.container_stats(),
-                            'short': 'false'
-                        },
-                    ],
                     'footer': self.message_footer(),
                 }
             ]
