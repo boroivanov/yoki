@@ -85,6 +85,9 @@ class ServiceGroupList(Resource):
 
     @cognito_auth_required
     def get(self):
+        return self.get_groups()
+
+    def get_groups(self):
         try:
             return {'serviceGroups': self.table.scan()['Items']}
         except ClientError as e:
@@ -106,7 +109,7 @@ class ServiceGroupDeploy(Resource):
 
     def deploy_service_group(self, cluster, group, data):
         sg = ServiceGroup()
-        res = sg.get(group)
+        res = sg.get_group(group)
 
         if isinstance(res, tuple):
             return res[0]
@@ -150,7 +153,7 @@ class ServiceGroupScale(Resource):
 
     def scale_service_group(self, cluster, group, data):
         sg = ServiceGroup()
-        res = sg.get(group)
+        res = sg.get_group(group)
 
         if isinstance(res, tuple):
             return res[0]

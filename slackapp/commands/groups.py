@@ -7,7 +7,7 @@ help_text = 'Manage service groups.'
 class SlackCommand(object):
     def _list_all_groups(self, args):
         sg_list = ServiceGroupList()
-        return sg_list.get()
+        return sg_list.get_groups()
 
     def _list_group(self, args):
         sg = ServiceGroup()
