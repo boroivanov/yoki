@@ -178,10 +178,11 @@ class SlackTaskDigest(Slack):
     def update_notifications_item(self, slack_response, saved_item=None,
                                   msg_ts_type='slack_ts'):
         try:
-            ts = slack_response['message']['ts']
+            ts = slack_response['ts']
         except KeyError:
             log.error('Error: Cannot get slack timestamp. Slack response:')
             log.error(slack_response)
+            return
 
         if saved_item:
             saved_item[msg_ts_type] = ts
