@@ -78,13 +78,21 @@ class DeploymentList(Resource):
             elif cluster and not service:
                 params['KeyConditionExpression'] = Key('cluster').eq(cluster)
             else:
-                return {'deployments': decimal_to_dict(
-                    self.table.scan()['Items']
-                )}
+                return self.scan_deployments()
 
-            return {'deployments': decimal_to_dict(
-                self.table.query(**params)['Items']
-            )}
+            return self.query_deployments(params)
         except ClientError as e:
             log.error(f'[{self.__class__.__name__}] {e}')
             return {'message': 'Error getting items.'}, 500
+
+    def query_deployments(self, params):
+        data = decimal_to_dict(self.table.query(**params)['Items'])
+        return self.json(data)
+
+    def scan_deployments(self):
+        data = decimal_to_dict(self.table.scan()['Items'])
+        return self.json(data)
+
+    def json(self, data, sort_key='updatedAt'):
+        data = sorted(data, key=lambda i: i[sort_key], reverse=True)
+        return {'deployments': data}
