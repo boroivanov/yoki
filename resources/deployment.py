@@ -1,7 +1,7 @@
 import os
 import logging
 import boto3
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, request
 from flask_cognito import cognito_auth_required
 
 from boto3.dynamodb.conditions import Key
@@ -71,6 +71,14 @@ class DeploymentList(Resource):
         params = {
             'IndexName': 'cluster-service-index',
         }
+
+        try:
+            params['Limit'] = int(request.args.get('limit'))
+        except ValueError:
+            pass
+        except TypeError:
+            pass
+
         try:
             if cluster and service:
                 params['KeyConditionExpression'] = Key('cluster').eq(
