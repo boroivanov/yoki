@@ -86,7 +86,7 @@ class DeploymentList(Resource):
             elif cluster and not service:
                 params['KeyConditionExpression'] = Key('cluster').eq(cluster)
             else:
-                return self.scan_deployments()
+                return self.scan_deployments(params)
 
             return self.query_deployments(params)
         except ClientError as e:
@@ -97,8 +97,8 @@ class DeploymentList(Resource):
         data = decimal_to_dict(self.table.query(**params)['Items'])
         return self.json(data)
 
-    def scan_deployments(self):
-        data = decimal_to_dict(self.table.scan()['Items'])
+    def scan_deployments(self, params):
+        data = decimal_to_dict(self.table.scan(**params)['Items'])
         return self.json(data)
 
     def json(self, data, sort_key='updatedAt'):
