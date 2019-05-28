@@ -30,7 +30,7 @@ class Deployment(Resource):
                         )
 
     @cognito_auth_required
-    def get(self, cluster, service, deployment):
+    def get(self, deployment, cluster=None, service=None):
         try:
             params = {
                 'Key': {'deployment': f'ecs-svc/{deployment}'},

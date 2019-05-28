@@ -40,6 +40,7 @@ CL_SRV_DEPL = f'{CL_SRV}/<string:deployment>'
 
 Deployment_routes = [
     f'{CL_SRV}/deploy',
+    f'/deployments/<string:deployment>',
     f'{CL_SRV}/deployments/<string:deployment>',
 ]
 api.add_resource(Deployment, *Deployment_routes)
