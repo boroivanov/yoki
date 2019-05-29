@@ -79,6 +79,9 @@ class DeploymentList(Resource):
         except TypeError:
             pass
 
+        return self.list_deployments(cluster, service, params)
+
+    def list_deployments(self, cluster, service, params):
         try:
             if cluster and service:
                 params['KeyConditionExpression'] = Key('cluster').eq(
