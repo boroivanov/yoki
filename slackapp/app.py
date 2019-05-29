@@ -54,6 +54,11 @@ class Slack(object):
 
         return channel_id
 
+    def verify_slack_token(self, token):
+        if token != os.environ['SLACK_VERIFICATION_TOKEN']:
+            log.error('Request token ' + token + ' does not match expected')
+            raise ValueError('Invalid request token')
+
 
 class SlackTaskDigest(Slack):
     def __init__(self, token, channel, record):
@@ -199,11 +204,6 @@ class SlackCommandHandler(Slack):
         log.info(f'Received slack command: {params}')
         self.verify_slack_token(params['token'])
         self.params = params
-
-    def verify_slack_token(self, token):
-        if token != os.environ['SLACK_VERIFICATION_TOKEN']:
-            log.error('Request token ' + token + ' does not match expected')
-            raise ValueError('Invalid request token')
 
     def run(self):
         '''Parse slack command object and run the command.
