@@ -12,7 +12,7 @@ from resources.group import (
     ServiceGroupDeploy,
     ServiceGroupScale
 )
-from resources.slack import Slack
+from resources.slack import Slack, SlackMessageAction
 from resources.auth import Auth
 
 app = Flask(__name__)
@@ -60,6 +60,7 @@ api.add_resource(ServiceGroupDeploy, f'{CL_GRP}/deploy')
 api.add_resource(ServiceGroupScale, f'{CL_GRP}/scale')
 
 api.add_resource(Slack, '/slack')
+api.add_resource(SlackMessageAction, '/slack/message_action')
 
 api.add_resource(Auth, '/auth')
 
