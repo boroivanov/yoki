@@ -37,7 +37,7 @@ class SlackCommand(object):
                     'actions': [
                         {
                             'name': 'rollback',
-                            'text': 'Redeploy',
+                            'text': 'Redeploy images',
                             'type': 'button',
                             'value': f"{d['images']}",
                         }
