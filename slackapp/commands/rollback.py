@@ -25,6 +25,11 @@ class SlackCommand(object):
 
         attachments = []
         for d in res['deployments']:
+            value = {
+                'cluster': d['cluster'],
+                'service': d['service'],
+                'images': {e: v for (e, v) in enumerate(d['images'])},
+            }
             attachments.append(
                 {
                     'title': f"[{d['definition'].split(':')[-1]}]"
@@ -39,7 +44,7 @@ class SlackCommand(object):
                             'name': 'rollback',
                             'text': 'Redeploy images',
                             'type': 'button',
-                            'value': f"{d['images']}",
+                            'value': str(value),
                         }
                     ]
 
