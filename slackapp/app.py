@@ -1,4 +1,5 @@
 import os
+import json
 import boto3
 import logging
 import string
@@ -197,7 +198,78 @@ class SlackTaskDigest(Slack):
         item.put_item()
 
 
-class SlackCommandHandler(Slack):
+class SlackOpsAutoLoader(object):
+
+    def get_obj(self, path, obj_type):
+        '''Load an object from a file. If the object is a class `SlackCommand`
+            or `SlackAction` return an instance of that class.
+
+        :param path: Path to file containing the object
+        :type path: str
+        :param obj_type: Name of class OR func/var etc.
+        :type obj_type: str
+        :return: Class instance OR object
+        :rtype: class instance OR object
+        '''
+        try:
+            module = importlib.import_module(path)
+            obj = getattr(module, obj_type)
+
+            if obj_type == 'SlackCommand' or obj_type == 'SlackAction':
+                return obj()
+            return obj
+        except ImportError:
+            raise
+        except AttributeError:
+            raise
+
+    def get_command(self, module):
+        '''Dynamically load slack commands from slackapp/commands/
+
+        :param module: Command filename
+        :type module: str
+        :return: SlackCommand object
+        :rtype: class object
+        '''
+        return self.get_obj(f'slackapp.commands.{module}', 'SlackCommand')
+
+    def get_action(self, module):
+        '''Dynamically load slack actions from slackapp/actions/
+
+        :param module: Action filename
+        :type module: str
+        :return: SlackAction object
+        :rtype: class object
+        '''
+        return self.get_obj(f'slackapp.actions.{module}', 'SlackAction')
+
+    def list_commands(self):
+        '''List commands in slackapp/commands/
+
+        :return: Slack commands
+        :rtype: list
+        '''
+        commands = []
+        alpha = string.ascii_letters
+        for filename in os.listdir(self.commands_path):
+            if filename.startswith(tuple(alpha)) and filename.endswith('.py'):
+                cmd = filename[:-3]
+                commands.append({
+                    'command': cmd,
+                    'help': self.get_command_help_text(cmd),
+                })
+
+        commands = sorted(commands, key=lambda i: i['command'])
+        return '\n'.join([f"`{i['command']}`{i['help']}" for i in commands])
+
+    def get_command_help_text(self, command):
+        try:
+            return f" - {self.get_command(command, 'help_text')}"
+        except AttributeError:
+            return ''
+
+
+class SlackCommandHandler(Slack, SlackOpsAutoLoader):
     commands_path = os.path.join(os.path.dirname(__file__), 'commands')
 
     def __init__(self, params):
@@ -232,48 +304,26 @@ class SlackCommandHandler(Slack):
     def help(self):
         return {'text': str(self.list_commands())}
 
-    def get_command(self, module, obj_type='SlackCommand'):
-        '''Dynamically load slack commands from slackapp/commands/
 
-        :param module: Command filename
-        :type module: str
-        :return: SlackCommand object
-        :rtype: class object
-        '''
+class SlackMessageActionHandler(Slack, SlackOpsAutoLoader):
+
+    def __init__(self, params):
+        log.info(f'Received slack message action: {params}')
+        params = json.loads(params['payload'])
+        self.verify_slack_token(params['token'])
+        self.params = params
+
+    def run(self):
+        action_name = self.params['actions'][0]['name']
+        action_value = self.params['actions'][0]['value']
+
         try:
-            path = f'slackapp.commands.{module}'
-            cmd_module = importlib.import_module(path)
-            obj = getattr(cmd_module, obj_type)
-
-            if obj_type == 'SlackCommand':
-                return obj()
-            return obj
+            action = self.get_action(action_name)
         except ImportError:
-            raise
-        except AttributeError:
-            raise
+            return self.help(f'Cannot find action: {action_name}')
 
-    def list_commands(self):
-        '''List commands in slackapp/commands/
+        res = action.run(action_value, self.params)
+        return res
 
-        :return: Slack commands
-        :rtype: list
-        '''
-        commands = []
-        alpha = string.ascii_letters
-        for filename in os.listdir(self.commands_path):
-            if filename.startswith(tuple(alpha)) and filename.endswith('.py'):
-                cmd = filename[:-3]
-                commands.append({
-                    'command': cmd,
-                    'help': self.get_command_help_text(cmd),
-                })
-
-        commands = sorted(commands, key=lambda i: i['command'])
-        return '\n'.join([f"`{i['command']}`{i['help']}" for i in commands])
-
-    def get_command_help_text(self, command):
-        try:
-            return f" - {self.get_command(command, 'help_text')}"
-        except AttributeError:
-            return ''
+    def help(self, msg):
+        return {'text': msg}
