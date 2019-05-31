@@ -1,4 +1,5 @@
 import os
+import json
 from resources.deployment import DeploymentList
 
 
@@ -44,7 +45,7 @@ class SlackCommand(object):
                             'name': 'rollback',
                             'text': 'Redeploy images',
                             'type': 'button',
-                            'value': str(value),
+                            'value': json.dumps(value),
                         }
                     ]
 
