@@ -264,7 +264,8 @@ class SlackOpsAutoLoader(object):
 
     def get_command_help_text(self, command):
         try:
-            return f" - {self.get_command(command, 'help_text')}"
+            text = self.get_obj(f'slackapp.commands.{command}', 'help_text')
+            return f' - {text}'
         except AttributeError:
             return ''
 
