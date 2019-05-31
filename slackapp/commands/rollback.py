@@ -29,7 +29,7 @@ class SlackCommand(object):
             value = {
                 'cluster': d['cluster'],
                 'service': d['service'],
-                'images': {e: v for (e, v) in enumerate(d['images'])},
+                'images': d['images'],
             }
             attachments.append(
                 {
