@@ -70,7 +70,8 @@ def register_routes(api):
 
     # Groups
     api.add_resource(ServiceGroup, '/groups/<string:group>')
-    api.add_resource(ServiceGroupList, '/groups')
+    api.add_resource(ServiceGroupList, '/groups',
+                     endpoint='api.ServiceGroupList')
     api.add_resource(ServiceGroupDeploy, f'{CL_GRP}/deploy')
     api.add_resource(ServiceGroupScale, f'{CL_GRP}/scale')
 
