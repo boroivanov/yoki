@@ -14,7 +14,7 @@ custom:
   pythonRequirements:
     dockerizePip: non-linux
   wsgi:
-    app: app.app
+    app: autoapp.app
     packRequirements: false
 
 
