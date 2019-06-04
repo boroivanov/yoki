@@ -1,7 +1,7 @@
 import boto3
 from botocore.exceptions import ClientError
 
-from lib.ecr import Ecr
+from yoki.lib.ecr import Ecr
 
 
 class Ecs(object):

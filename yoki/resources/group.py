@@ -8,8 +8,8 @@ from botocore.exceptions import ClientError
 from flask_restful import Resource, reqparse
 from flask_cognito import cognito_auth_required
 
-from resources.deployment import Deployment
-from resources.scale import Scale
+from yoki.resources.deployment import Deployment
+from yoki.resources.scale import Scale
 
 
 log = logging.getLogger()

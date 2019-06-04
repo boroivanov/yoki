@@ -1,6 +1,6 @@
 import os
 import json
-from resources.deployment import DeploymentList
+from yoki.resources.deployment import DeploymentList
 
 
 REGION = os.environ.get('AWS_REGION', 'us-east-1')

@@ -1,5 +1,5 @@
-from resources.scale import Scale
-from models.notifications import Notifications
+from yoki.resources.scale import Scale
+from yoki.models.notifications import Notifications
 
 
 help_text = 'Scale a service.'

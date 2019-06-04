@@ -1,4 +1,4 @@
-from resources.group import ServiceGroup, ServiceGroupList
+from yoki.resources.group import ServiceGroup, ServiceGroupList
 
 
 help_text = 'Manage service groups.'

@@ -4,16 +4,16 @@ from flask import Flask
 from flask_restful import Api
 from flask_cognito import CognitoAuth
 
-from resources.deployment import Deployment, DeploymentList
-from resources.scale import Scale
-from resources.group import (
+from yoki.resources.deployment import Deployment, DeploymentList
+from yoki.resources.scale import Scale
+from yoki.resources.group import (
     ServiceGroup,
     ServiceGroupList,
     ServiceGroupDeploy,
     ServiceGroupScale
 )
-from resources.slack import Slack, SlackMessageAction
-from resources.auth import Auth
+from yoki.resources.slack import Slack, SlackMessageAction
+from yoki.resources.auth import Auth
 
 
 def create_app(settings_override=None):
