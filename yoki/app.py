@@ -65,17 +65,22 @@ def register_routes(api):
         f'{CL}/deployments',
         f'{CL_SRV}/deployments',
     ]
-    api.add_resource(DeploymentList, *DeploymentList_routes)
-    api.add_resource(Scale, f'{CL_SRV}/scale')
+    api.add_resource(DeploymentList, *DeploymentList_routes,
+                     endpoint='api.DeploymentList')
+    api.add_resource(Scale, f'{CL_SRV}/scale', endpoint='api.Scale')
 
     # Groups
-    api.add_resource(ServiceGroup, '/groups/<string:group>')
+    api.add_resource(ServiceGroup, '/groups/<string:group>',
+                     endpoint='api.ServiceGroup')
     api.add_resource(ServiceGroupList, '/groups',
                      endpoint='api.ServiceGroupList')
-    api.add_resource(ServiceGroupDeploy, f'{CL_GRP}/deploy')
-    api.add_resource(ServiceGroupScale, f'{CL_GRP}/scale')
+    api.add_resource(ServiceGroupDeploy, f'{CL_GRP}/deploy',
+                     endpoint='api.ServiceGroupDeploy')
+    api.add_resource(ServiceGroupScale, f'{CL_GRP}/scale',
+                     endpoint='api.ServiceGroupScale')
 
-    api.add_resource(Slack, '/slack')
-    api.add_resource(SlackMessageAction, '/slack/message_action')
+    api.add_resource(Slack, '/slack', endpoint='api.Slack')
+    api.add_resource(SlackMessageAction, '/slack/message_action',
+                     endpoint='api.SlackMessageAction')
 
-    api.add_resource(Auth, '/auth')
+    api.add_resource(Auth, '/auth', endpoint='api.Auth')
