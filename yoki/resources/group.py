@@ -60,7 +60,6 @@ class ServiceGroup(Resource):
 
     def update_group(self, group, services: dict):
         item = {'group': group}
-        print(f'SERVICES {services}')
         item.update(services)
         try:
             self.table.put_item(Item=item)
