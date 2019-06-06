@@ -4,7 +4,7 @@ from flask import url_for
 from tests.utils import TestMixin
 
 
-class TestGroup(TestMixin):
+class TestServiceGroup(TestMixin):
     def test_post_group_unauthorized(self):
         r = self.client.post(url_for('api.ServiceGroup', group='test1'),
                              json={'services': 'first second third'})
@@ -49,7 +49,7 @@ class TestGroup(TestMixin):
         assert d['message'] == 'Item deleted.'
 
 
-class TestGroupList(TestMixin):
+class TestServiceGroupList(TestMixin):
     def test_group_list_unauthorized(self):
         r = self.client.get(url_for('api.ServiceGroupList'))
         assert r.status_code == 401
