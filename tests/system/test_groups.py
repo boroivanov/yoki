@@ -59,3 +59,24 @@ class TestServiceGroupList(TestMixin):
         r = self.client.get(url_for('api.ServiceGroupList'),
                             headers={'X-Yoki-Authorization': self.auth_header})
         assert r.status_code == 200
+
+
+class TestServiceGroupDeploy(TestMixin):
+    def test_create_deployment_unauthorized(self):
+        r = self.client.post(url_for('api.ServiceGroupDeploy',
+                                     cluster='stage', group='octo'))
+        assert r.status_code == 401
+        assert 'Authorization Required' in str(r.data)
+
+    def test_create_deployment(self):
+        url = url_for('api.ServiceGroupDeploy',
+                      cluster='stage', group='octo')
+
+        r = self.client.post(url,
+                             json={'tags': {'octo': 'awscp-5513185'}},
+                             headers={
+                                 'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert d['message'] == "Deploying to stage hubble with " \
+            "{'tags': {'octo': 'awscp-5513185'}}"
