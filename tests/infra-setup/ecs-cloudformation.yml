@@ -1,0 +1,174 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Yoki Test Infra v1.0
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: VPC
+        Parameters:
+          - VpcCidr
+      - Label:
+          default: Private CIDRs
+        Parameters:
+          - FirstPrivateSubnetCidr
+          - SecondPrivateSubnetCidr
+    ParameterLabels:
+      # VPC
+      VpcCidr:
+        default: Vpc Cidr
+      # Private CIDRs
+      FirstPrivateSubnetCidr:
+        default: First Private Subnet CIDR
+      SecondPrivateSubnetCidr:
+        default: Second Private Subnet CIDR
+
+
+Parameters:
+  # VPC
+  VpcCidr:
+    Type: String
+    Default: 10.123.0.0/16
+  # Private CIDRs
+  FirstPrivateSubnetCidr:
+    Type: String
+    Default: 10.123.32.0/19
+  SecondPrivateSubnetCidr:
+    Type: String
+    Default: 10.123.64.0/19
+
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+
+  FirstPrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub ${AWS::Region}a
+      CidrBlock: !Ref FirstPrivateSubnetCidr
+      VpcId: !Ref Vpc
+
+  SecondPrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub ${AWS::Region}b
+      CidrBlock: !Ref SecondPrivateSubnetCidr
+      VpcId: !Ref Vpc
+
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: test-yoki
+
+  EcsService1:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref EcsCluster
+      DesiredCount: 0
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref EcsServiceSecurityGroups
+          Subnets:
+            - !Ref FirstPrivateSubnet
+            - !Ref SecondPrivateSubnet
+      ServiceName: srv1
+      TaskDefinition: !Ref EcsTaskDefinition1
+
+  EcsTaskDefinition1:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Name: container1
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/test-yoki:srv1
+        - Name: nginx
+          Image: nginx
+      Cpu: 256
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole
+      Family: test-yoki-srv1
+      Memory: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+
+  EcsService2:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref EcsCluster
+      DesiredCount: 0
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref EcsServiceSecurityGroups
+          Subnets:
+            - !Ref FirstPrivateSubnet
+            - !Ref SecondPrivateSubnet
+      ServiceName: srv2
+      TaskDefinition: !Ref EcsTaskDefinition2
+
+  EcsTaskDefinition2:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Name: container1
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/test-yoki:srv2
+      Cpu: 256
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole
+      Family: test-yoki-srv2
+      Memory: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+
+  EcrRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: test-yoki
+
+
+  EcsServiceSecurityGroups:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Test Yoki security group
+      VpcId: !Ref Vpc
+      # SecurityGroupIngress:
+      #   - IpProtocol: tcp
+      #     FromPort: 0
+      #     ToPort: 65535
+      #     CidrIp: 0.0.0.0/0
+      # SecurityGroupEgress:
+      #   - IpProtocol: -1
+      #     FromPort: -1
+      #     ToPort: -1
+      #     CidrIp: 0.0.0.0/0
+
+Outputs:
+  VpcId:
+    Value: !Ref Vpc
+    Export:
+      Name: !Sub '${AWS::StackName}-VpcId'
+  VpcCidr:
+    Value: !GetAtt Vpc.CidrBlock
+    Export:
+      Name: !Sub '${AWS::StackName}-VpcCidr'
+  FirstPrivateSubnetCidr:
+    Condition: CreateFirstPrivateSubnet
+    Value: !Ref FirstPrivateSubnetCidr
+    Export:
+      Name: !Sub '${AWS::StackName}-FirstPrivateSubnetCidr'
+  SecondPrivateSubnetCidr:
+    Condition: CreateSecondPrivateSubnet
+    Value: !Ref SecondPrivateSubnetCidr
+    Export:
+      Name: !Sub '${AWS::StackName}-SecondPrivateSubnetCidr'
