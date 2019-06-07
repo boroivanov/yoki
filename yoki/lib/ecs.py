@@ -21,10 +21,10 @@ class Ecs(object):
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFoundException':
                 raise ValueError(f'Cluster not found: {self.cluster_name}')
+            elif e.response['Error']['Code'] == 'ServiceNotFoundException':
+                raise ValueError(f'Service not found: {self.service_name}')
             else:
                 raise RuntimeError(e)
-        except IndexError:
-            raise ValueError(f'Service not found: {self.service_name}')
 
     def describe_task_definition(self, taskDefinition):
         res = self.ecs.describe_task_definition(taskDefinition=taskDefinition)
@@ -97,10 +97,10 @@ class Ecs(object):
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFoundException':
                 raise ValueError(f'Cluster not found: {self.cluster_name}')
+            elif e.response['Error']['Code'] == 'ServiceNotFoundException':
+                raise ValueError(f'Service not found: {self.service_name}')
             else:
                 raise RuntimeError(e)
-        except IndexError:
-            raise ValueError(f'Service not found: {self.service_name}')
 
     def create_new_task_definition(self, td, new_images):
         new_td = td.copy()
