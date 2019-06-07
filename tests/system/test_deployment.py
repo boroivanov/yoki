@@ -45,6 +45,20 @@ class TestDeploymentList(TestMixin):
         d = ast.literal_eval(r.data.decode('utf-8'))
         assert len(d['deployments']) == 3
 
+    def test_get_deployments_limit_one(self):
+        r = self.client.get(url_for('api.DeploymentList', limit=1),
+                            headers={'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert len(d['deployments']) == 1
+
+    def test_get_deployments_limit_one_bad(self):
+        r = self.client.get(url_for('api.DeploymentList', limit='asdf'),
+                            headers={'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert len(d['deployments']) == 3
+
     def test_get_deployments_by_cluster(self):
         r = self.client.get(url_for('api.DeploymentList',
                                     cluster='test-yoki'),
@@ -61,7 +75,15 @@ class TestDeploymentList(TestMixin):
         d = ast.literal_eval(r.data.decode('utf-8'))
         assert len(d['deployments']) == 1
 
-    def test_get_deployments_missing(self):
+    def test_get_deployments_missing_cluster(self):
+        r = self.client.get(url_for('api.DeploymentList',
+                                    cluster='missing'),
+                            headers={'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert d == {'deployments': []}
+
+    def test_get_deployments_missing_service(self):
         r = self.client.get(url_for('api.DeploymentList',
                                     cluster='test-yoki', service='missing'),
                             headers={'X-Yoki-Authorization': self.auth_header})
