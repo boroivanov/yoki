@@ -32,9 +32,31 @@ class TestDeployment(TestMixin):
             'X-Yoki-Authorization': self.auth_header})
         assert r.status_code == 200
         d = ast.literal_eval(r.data.decode('utf-8'))
-        msg1 = "Deploying to test-yoki srv1 " \
+        expected = "Deploying to test-yoki srv1 " \
             "with {'tags': {'container1': 'srv1'}}"
-        assert msg1 == d['message']
+        assert expected == d['message']
+
+    def test_post_deployment_missing_cluster(self):
+        r = self.client.post(url_for('api.Deployment',
+                                     cluster='missing', service='srv1'),
+                             json={'tags': {'container1': 'srv1'}},
+                             headers={
+            'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        expected = "[missing srv1]: Cluster not found: missing"
+        assert expected == d['message']
+
+    def test_post_deployment_missing_service(self):
+        r = self.client.post(url_for('api.Deployment',
+                                     cluster='test-yoki', service='missing'),
+                             json={'tags': {'container1': 'srv1'}},
+                             headers={
+            'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        expected = "[test-yoki missing]: Service not found: missing"
+        assert expected == d['message']
 
 
 class TestDeploymentList(TestMixin):
