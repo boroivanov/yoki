@@ -1,5 +1,8 @@
 import pytest
 import json
+import boto3
+
+from tests.seed import task_digest_items
 
 
 class TestMixin(object):
@@ -17,3 +20,8 @@ class TestMixin(object):
 
         self.auth_header = "Bearer {}".format(
             json.loads(auth_request.data)['access_token'])
+
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('test-yoki-ECSTaskDigest')
+        for item in task_digest_items:
+            table.put_item(Item=item)
