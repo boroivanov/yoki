@@ -25,6 +25,8 @@ class Ecs(object):
                 raise ValueError(f'Service not found: {self.service_name}')
             else:
                 raise RuntimeError(e)
+        except IndexError:
+            raise ValueError(f'Service not found: {self.service_name}')
 
     def describe_task_definition(self, taskDefinition):
         res = self.ecs.describe_task_definition(taskDefinition=taskDefinition)
