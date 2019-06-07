@@ -58,7 +58,7 @@ def register_routes(api):
         f'/deployments/<string:deployment>',
         f'{CL_SRV}/deployments/<string:deployment>',
     ]
-    api.add_resource(Deployment, *Deployment_routes)
+    api.add_resource(Deployment, *Deployment_routes, endpoint='api.Deployment')
 
     DeploymentList_routes = [
         '/deployments',
