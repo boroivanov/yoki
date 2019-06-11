@@ -123,7 +123,7 @@ class Ecs(object):
 
         return new_td
 
-    def split_image_uri(self, container: str) -> tuple:
+    def split_image_uri(self, container: str) -> dict:
         raw = container['image']
         image_uri = {}
 
