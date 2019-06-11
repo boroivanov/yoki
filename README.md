@@ -50,7 +50,8 @@ You will need to manually create the slack app in your org. PLease follow the st
     - Use the API GW endpoint from the serverless output as `Request URL` for the slack command
     - Ex: `Request URL` https://asdf1234.execute-api.us-east-1.amazonaws.com/prod/slack
 
-    ![slackapp_slash_command](https://raw.githubusercontent.com/boroivanov/yoki/master/images/slackapp-slash-command.png)
+    ![slackapp_slash_command](images/slackapp-slash-command.png?raw=true)
+
 4. Go to OAuth & Permissions and grant the following permissions to the slack app:
     - channels:read
     - chat:write:bot
@@ -58,7 +59,7 @@ You will need to manually create the slack app in your org. PLease follow the st
     - incoming-webhook
     - commands
 
-    ![slackapp_permissions](https://raw.githubusercontent.com/boroivanov/yoki/master/images/slackapp-permissions.png)
+    ![slackapp_permissions](images/slackapp-permissions.png?raw=true)
 5. Install the app and record the `OAuth Access Token` from the OAuth & Permissions near the top.
 6. Update the .env.yml file and add `Verification Token` and `OAuth Access Token`
     ```bash
@@ -99,7 +100,7 @@ You will need to manually create the slack app in your org. PLease follow the st
 /ecs rollback <cluster> <service>
 ```
 
-![slackapp_message](https://raw.githubusercontent.com/boroivanov/yoki/master/images/slackapp-message.png)
+![slackapp_message](images/slackapp-message.png?raw=true)
 
 
 ### API examples
