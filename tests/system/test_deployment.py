@@ -1,6 +1,9 @@
 import ast
 
 from flask import url_for
+from botocore.stub import Stubber
+
+from yoki.resources.deployment import Deployment, DeploymentList
 from tests.utils import TestMixin
 
 
@@ -23,6 +26,21 @@ class TestDeployment(TestMixin):
         assert r.status_code == 200
         d = ast.literal_eval(r.data.decode('utf-8'))
         assert 'ecs-svc/9223370476922431730' == d['deployment']['deployment']
+
+    def test_get_deployment_db_read_error(self):
+        d = Deployment()
+
+        with Stubber(d.dynamodb.meta.client) as stubber:
+            stubber.add_client_error('get_item')
+            r = self.client.get(url_for('api.Deployment',
+                                        deployment='9223370476922431730'),
+                                headers={
+                                    'X-Yoki-Authorization': self.auth_header
+            })
+
+        assert r.status_code == 500
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert d['message'] == 'Error getting item.'
 
     def test_post_deployment(self):
         r = self.client.post(url_for('api.Deployment',
@@ -144,3 +162,17 @@ class TestDeploymentList(TestMixin):
         assert r.status_code == 200
         d = ast.literal_eval(r.data.decode('utf-8'))
         assert d == {'deployments': []}
+
+    def test_get_deployment_db_read_error(self):
+        d = DeploymentList()
+
+        with Stubber(d.dynamodb.meta.client) as stubber:
+            stubber.add_client_error('scan')
+            r = self.client.get(url_for('api.DeploymentList'),
+                                headers={
+                                    'X-Yoki-Authorization': self.auth_header
+            })
+
+        assert r.status_code == 500
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert d['message'] == 'Error getting items.'
