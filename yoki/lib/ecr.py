@@ -23,8 +23,8 @@ class Ecr(object):
             return True
         except ClientError as e:
             if e.response['Error']['Code'] == 'ImageNotFoundException':
-                raise ValueError('Image not found: {}'.format(e))
+                raise ValueError(f'Image not found: {e}')
+            elif e.response['Error']['Code'] == 'RepositoryNotFoundException':
+                raise ValueError(f'Repo not found: {e}')
             else:
                 raise RuntimeError(e)
-
-        return False

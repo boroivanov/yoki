@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse
 from flask_cognito import cognito_auth_required
 
-from lib.ecs import Ecs
+from yoki.lib.ecs import Ecs
 
 
 class Scale(Resource):

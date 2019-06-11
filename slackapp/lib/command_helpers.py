@@ -1,6 +1,6 @@
-from resources.deployment import Deployment
-from resources.group import ServiceGroupDeploy
-from models.notifications import Notifications
+from yoki.resources.deployment import Deployment
+from yoki.resources.group import ServiceGroupDeploy
+from yoki.models.notifications import Notifications
 
 
 class DeployCommand(object):

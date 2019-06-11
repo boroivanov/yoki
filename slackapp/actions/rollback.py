@@ -1,6 +1,6 @@
 import json
-from resources.deployment import Deployment
-from models.notifications import Notifications
+from yoki.resources.deployment import Deployment
+from yoki.models.notifications import Notifications
 
 
 class SlackAction(object):

@@ -1,5 +1,5 @@
-from resources.group import ServiceGroupScale
-from models.notifications import Notifications
+from yoki.resources.group import ServiceGroupScale
+from yoki.models.notifications import Notifications
 
 
 help_text = 'Scale a service group.'

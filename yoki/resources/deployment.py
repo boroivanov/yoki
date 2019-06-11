@@ -7,8 +7,8 @@ from flask_cognito import cognito_auth_required
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
-from encoders.decimal import decimal_to_dict
-from lib.ecs import Ecs
+from yoki.encoders.decimal import decimal_to_dict
+from yoki.lib.ecs import Ecs
 
 
 DYNAMODB_TABLE_PREFIX = os.getenv('DYNAMODB_TABLE_PREFIX', 'dev-')

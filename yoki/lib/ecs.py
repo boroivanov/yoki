@@ -1,7 +1,7 @@
 import boto3
 from botocore.exceptions import ClientError
 
-from lib.ecr import Ecr
+from yoki.lib.ecr import Ecr
 
 
 class Ecs(object):
@@ -21,6 +21,8 @@ class Ecs(object):
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFoundException':
                 raise ValueError(f'Cluster not found: {self.cluster_name}')
+            elif e.response['Error']['Code'] == 'ServiceNotFoundException':
+                raise ValueError(f'Service not found: {self.service_name}')
             else:
                 raise RuntimeError(e)
         except IndexError:
@@ -57,9 +59,13 @@ class Ecs(object):
 
     def rename_positional_containers(self, index, container):
         '''Swap positional container/tag with container_name/tag'''
-        if index in self.tags.keys():
-            self.tags[container['name']] = self.tags[index]
-            del self.tags[index]
+        if index in self.tags.keys() or str(index) in self.tags.keys():
+            try:
+                self.tags[container['name']] = self.tags[index]
+                del self.tags[index]
+            except KeyError:
+                self.tags[container['name']] = self.tags[str(index)]
+                del self.tags[str(index)]
 
     def register_new_task_definition(self):
         '''Get the current task definition. Compare and verify all images/tags.
@@ -97,10 +103,10 @@ class Ecs(object):
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFoundException':
                 raise ValueError(f'Cluster not found: {self.cluster_name}')
+            elif e.response['Error']['Code'] == 'ServiceNotFoundException':
+                raise ValueError(f'Service not found: {self.service_name}')
             else:
                 raise RuntimeError(e)
-        except IndexError:
-            raise ValueError(f'Service not found: {self.service_name}')
 
     def create_new_task_definition(self, td, new_images):
         new_td = td.copy()
@@ -117,7 +123,7 @@ class Ecs(object):
 
         return new_td
 
-    def split_image_uri(self, container: str) -> tuple:
+    def split_image_uri(self, container: str) -> dict:
         raw = container['image']
         image_uri = {}
 

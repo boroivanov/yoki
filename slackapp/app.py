@@ -8,7 +8,7 @@ import importlib
 from collections import Counter
 from slackclient import SlackClient
 
-from models.notifications import Notifications
+from yoki.models.notifications import Notifications
 
 
 log = logging.getLogger()
