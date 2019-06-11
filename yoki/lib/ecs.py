@@ -59,9 +59,13 @@ class Ecs(object):
 
     def rename_positional_containers(self, index, container):
         '''Swap positional container/tag with container_name/tag'''
-        if index in self.tags.keys():
-            self.tags[container['name']] = self.tags[index]
-            del self.tags[index]
+        if index in self.tags.keys() or str(index) in self.tags.keys():
+            try:
+                self.tags[container['name']] = self.tags[index]
+                del self.tags[index]
+            except KeyError:
+                self.tags[container['name']] = self.tags[str(index)]
+                del self.tags[str(index)]
 
     def register_new_task_definition(self):
         '''Get the current task definition. Compare and verify all images/tags.
