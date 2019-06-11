@@ -42,3 +42,7 @@ class TestNotifications(object):
         expected['TTL'] = int(time.time()) + int(2592000)
 
         assert n.get_item() == expected
+
+    def test_read_missing_notification(self):
+        n = Notifications(deployment='missing')
+        assert n.get_item() == None
