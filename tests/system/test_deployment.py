@@ -36,6 +36,18 @@ class TestDeployment(TestMixin):
             "with {'tags': {'container1': 'srv1'}}"
         assert expected == d['message']
 
+    def test_post_deployment_positional_tag(self):
+        r = self.client.post(url_for('api.Deployment',
+                                     cluster='test-yoki', service='srv1'),
+                             json={'tags': {0: 'srv1'}},
+                             headers={
+            'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        expected = "Deploying to test-yoki srv1 " \
+            "with {'tags': {'container1': 'srv1'}}"
+        assert expected == d['message']
+
     def test_post_deployment_missing_tag(self):
         r = self.client.post(url_for('api.Deployment',
                                      cluster='test-yoki', service='srv1'),
