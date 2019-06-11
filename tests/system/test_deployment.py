@@ -36,6 +36,26 @@ class TestDeployment(TestMixin):
             "with {'tags': {'container1': 'srv1'}}"
         assert expected == d['message']
 
+    def test_post_deployment_missing_tag(self):
+        r = self.client.post(url_for('api.Deployment',
+                                     cluster='test-yoki', service='srv1'),
+                             json={'tags': {'container1': 'missing'}},
+                             headers={
+            'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert 'Image not found:' in d['message']
+
+    def test_post_deployment_missing_container(self):
+        r = self.client.post(url_for('api.Deployment',
+                                     cluster='test-yoki', service='srv1'),
+                             json={'tags': {'missing': 'srv1'}},
+                             headers={
+            'X-Yoki-Authorization': self.auth_header})
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert 'Container missing not found' in d['message']
+
     def test_post_deployment_missing_cluster(self):
         r = self.client.post(url_for('api.Deployment',
                                      cluster='missing', service='srv1'),
