@@ -45,3 +45,42 @@ class TestScale(TestMixin):
         d = ast.literal_eval(r.data.decode('utf-8'))
         assert d['message'] == "[test-yoki missing]: " \
             "Service not found: missing"
+
+
+class TestServiceGroupScale(TestMixin):
+    def test_group_scale_unauthorized(self):
+        r = self.client.post(url_for('api.ServiceGroupScale',
+                                     cluster='test-yoki', group='group1'))
+        assert r.status_code == 401
+        assert 'Authorization Required' in str(r.data)
+
+    def test_group_scale(self):
+        r = self.client.post(url_for('api.ServiceGroupScale',
+                                     cluster='test-yoki', group='group1'),
+                             json={'count': 0},
+                             headers={
+                                 'X-Yoki-Authorization': self.auth_header})
+
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+
+        msg1 = "Scaling test-yoki srv1 with {'count': 0}"
+        msg2 = "Scaling test-yoki srv2 with {'count': 0}"
+
+        assert 'deployment_id' in d['messages'][0]
+        assert 'deployment_id' in d['messages'][1]
+        assert msg1 == d['messages'][0]['message'] or \
+            msg1 == d['messages'][1]['message']
+        assert msg2 == d['messages'][0]['message'] or \
+            msg2 == d['messages'][1]['message']
+
+    def test_group_scale_missing_group(self):
+        r = self.client.post(url_for('api.ServiceGroupScale',
+                                     cluster='test-yoki', group='missing'),
+                             json={'count': 0},
+                             headers={
+                                 'X-Yoki-Authorization': self.auth_header})
+
+        assert r.status_code == 200
+        d = ast.literal_eval(r.data.decode('utf-8'))
+        assert d['message'] == 'Group not found: missing'
