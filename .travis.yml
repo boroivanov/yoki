@@ -8,6 +8,8 @@ notifications:
 install:
   - pip install tox-travis
   - pip install -r requirements-dev.txt
+  - mkdir ~/.aws
+  - printf "[default]\nregion = us-east-1\n[profile no-region]" > ~/.aws/config
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
