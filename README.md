@@ -2,7 +2,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/ae723a0073e47a34bd9d/maintainability)](https://codeclimate.com/github/boroivanov/yoki/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/ae723a0073e47a34bd9d/test_coverage)](https://codeclimate.com/github/boroivanov/yoki/test_coverage)
 
-# Yoki (ECS API)
+# Yōki 容器 (ECS API)
 
 Yoki is a supplementary ECS API. The main goal is to provide information and functionality which is either not easily accessible or not available via the AWS API and console.
 
