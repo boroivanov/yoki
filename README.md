@@ -24,24 +24,24 @@ Yoki is a serverless app. The installation will create API GW, DynamoDB tables, 
 
 **Deploy the API**
 
-    ```bash
-    # For your initial installation you should run all the commands below in the parent app dir.
+```bash
+# For your initial installation you should run all the commands below in the parent app dir.
 
-    # Create the environment variables files. The defaults are safe to use but change SLACK_CHANNEL or create that channel in your slack org.
-    cp .env.yml.example .env.yml
+# Create the environment variables files. The defaults are safe to use but change SLACK_CHANNEL or create that channel in your slack org.
+cp .env.yml.example .env.yml
 
-    # Install Serverless
-    npm install -g serverless
-    npm install serverless-python-requirements
-    npm install serverless-wsgi
+# Install Serverless
+npm install -g serverless
+npm install serverless-python-requirements
+npm install serverless-wsgi
 
-    # Python virtual env
-    virtualenv `which python3` venv
-    source venv/bin/activate
+# Python virtual env
+virtualenv `which python3` venv
+source venv/bin/activate
 
-    # Deploy the app
-    sls deploy --stage prod
-    ```
+# Deploy the app
+sls deploy --stage prod
+```
 
 
 ### Slack App Installation
