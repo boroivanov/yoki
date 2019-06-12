@@ -10,6 +10,7 @@ install:
   - pip install -r requirements-dev.txt
   - mkdir ~/.aws
   - printf "[default]\nregion = us-east-1\n[profile no-region]" > ~/.aws/config
+  - printf "[default]\naws_access_key_id=${AWS_ACCESS_KEY_ID}\naws_secret_access_key=${AWS_SECRET_ACCESS_KEY}\n" > ~/.aws/credentials
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
