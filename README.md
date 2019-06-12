@@ -13,7 +13,7 @@ Main features:
 - service groups - deploy and scale a group of services at once.
 - deployment release history.
 - rollback a release.
-- slack deploy/scale commands and notifications.
+- slack commands and notifications.
 - auth via cognito user pools
 
 
