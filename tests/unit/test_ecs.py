@@ -2,7 +2,6 @@ import pytest
 from botocore.stub import Stubber
 
 from yoki.lib.ecs import Ecs
-from yoki.lib.ecr import Ecr
 
 
 class TestEcs(object):
