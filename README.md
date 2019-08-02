@@ -36,7 +36,7 @@ npm install serverless-python-requirements
 npm install serverless-wsgi
 
 # Python virtual env
-virtualenv `which python3` venv
+virtualenv -p `which python3` venv
 source venv/bin/activate
 
 # Deploy the app
