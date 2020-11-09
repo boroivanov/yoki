@@ -62,8 +62,8 @@ You will need to manually create the slack app in your org. PLease follow the st
     - chat:write:user
     - incoming-webhook
     - commands
+    - groups:read
 
-    ![slackapp_permissions](images/slackapp-permissions.png?raw=true)
 5. Install the app and record the `OAuth Access Token` from the OAuth & Permissions near the top.
 6. Update the .env.yml file and add `Verification Token` and `OAuth Access Token`
     ```bash

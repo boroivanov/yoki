@@ -36,9 +36,9 @@ class Slack(object):
             except TypeError:
                 pass
             response = self.sc.api_call(
-                'channels.list',
+                'conversations.list',
                 exclude_archived='true',
-                exclude_members='true',
+                types='public_channel,private_channel',
                 cursor=cursor
             )
             channels += response['channels']
